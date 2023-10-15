@@ -1,6 +1,5 @@
 import uuid
 
-import bcrypt
 from homecontrol_base.service.core import BaseService
 
 from homecontrol_api.config.api import APIConfig
@@ -54,25 +53,16 @@ class UserService(BaseService[HomeControlAPIDatabaseConnection]):
         # Return the created user
         return User.model_validate(user)
 
-    def authenticate_user(self, login_info: LoginPost) -> UserSession:
-        """Logs in as a given user creating a new session for them
+    def _create_user_session(self, user: User) -> UserSession:
+        """Creates a session for a given User (assumes authentication already done)
 
         Args:
-            login_info (LoginPost): User login information
+            user (User): User to create the session for
 
         Returns:
-            UserSession: New session fot the user to use
-
-        Raises:
-            AuthenticationError: If either the username or password is wrong
+            UserSession: The user's new session
         """
-        # Attempt to obtain the user
-        user = self._db_conn.users.get_by_username(login_info.username)
-        # Now verify the password
-        if not verify_password(login_info.password, user.hashed_password):
-            raise AuthenticationError("Invalid password")
 
-        # If got here, can create a new session
         session_id = uuid.uuid4()
         user_session = UserSessionInDB(
             id=session_id,
@@ -91,3 +81,29 @@ class UserService(BaseService[HomeControlAPIDatabaseConnection]):
         # Save in the db
         user_session = self._db_conn.user_sessions.create(user_session)
         return UserSession.model_validate(user_session)
+
+    def login(self, login_info: LoginPost) -> UserSession:
+        """Logs in as a given user using a username and password
+
+        Args:
+            login_info (LoginPost): User login information
+
+        Returns:
+            UserSession: New session fot the user to use
+
+        Raises:
+            AuthenticationError: If either the username or password is wrong
+        """
+        # Attempt to obtain the user
+        user = self._db_conn.users.get_by_username(login_info.username)
+        # Now verify the password
+        if not verify_password(login_info.password, user.hashed_password):
+            raise AuthenticationError("Invalid password")
+
+        # If got here, can create a new session
+        return self._create_user_session(user)
+
+    def authenticate_user(self) -> User:
+        # TODO: Authenticate using the tokens - ensuring they match the ones in the database
+        # for the session found in the token
+        pass
