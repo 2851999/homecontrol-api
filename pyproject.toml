@@ -18,4 +18,5 @@ dependencies = [
     "homecontrol-base@git+https://github.com/2851999/homecontrol-base#egg=main",
     "fastapi",
     "uvicorn[standard]",
+    "bcrypt",
 ]
