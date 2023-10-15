@@ -40,6 +40,25 @@ class UsersDBConnection(DatabaseConnection):
             raise DatabaseEntryNotFoundError(f"User with id '{user_id}' was not found")
         return user
     
+    def get_by_username(self, username: str) -> UserInDB:
+        """Returns UserInDB given a user's username
+        
+        Args:
+            username (str): Username of the user
+
+        Returns:
+            UserInDB: Info about the user
+
+        Raises:
+            DatabaseEntryNotFoundError: If the user isn't found    
+        """
+        user = (
+            self._session.query(UserInDB).filter(UserInDB.username ==  username).first()
+        )
+        if not user:
+            raise DatabaseEntryNotFoundError(f"User with username '{username}' was not found")
+        return user
+    
     def get_all(self) -> list[UserInDB]:
         """Returns a list of information about all users"""
         return self._session.query(UserInDB).all()

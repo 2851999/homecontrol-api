@@ -23,10 +23,22 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: StringUUID
-    name: str
+    username: str
     account_type: UserAccountType
 
 class UserPost(BaseModel):
-    name: str
+    username: str
     password: str
     account_type: UserAccountType
+
+class LoginPost(BaseModel):
+    username: str
+    password: str
+
+class UserSession(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: StringUUID
+    user_id: StringUUID
+    access_token: str
+    refresh_token: str

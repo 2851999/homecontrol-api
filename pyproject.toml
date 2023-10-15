@@ -19,4 +19,5 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "bcrypt",
+    "pyjwt",
 ]

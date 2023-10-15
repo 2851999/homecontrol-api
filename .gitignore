@@ -163,6 +163,7 @@ cython_debug/
 midea.json
 database.json
 hue.json
+api.json
 
 # Local databases
 homecontrol_base.db
