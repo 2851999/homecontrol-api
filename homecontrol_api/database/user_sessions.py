@@ -19,10 +19,10 @@ class UserSessionsDBConnection(DatabaseConnection):
         self._session.commit()
         self._session.refresh(user_session)
         return user_session
-    
+
     def get(self, user_session_id: str) -> UserSessionInDB:
         """Returns UserSessionInDB given a user's ID
-        
+
         Args:
             user_session_id (str): ID of the user
 
@@ -34,16 +34,25 @@ class UserSessionsDBConnection(DatabaseConnection):
         """
 
         user_session = (
-            self._session.query(UserSessionInDB).filter(UserSessionInDB.id == UUID(user_session_id)).first()
+            self._session.query(UserSessionInDB)
+            .filter(UserSessionInDB.id == UUID(user_session_id))
+            .first()
         )
         if not user_session:
-            raise DatabaseEntryNotFoundError(f"User session with id '{user_session_id}' was not found")
+            raise DatabaseEntryNotFoundError(
+                f"User session with id '{user_session_id}' was not found"
+            )
         return user_session
-    
+
     def get_all(self) -> list[UserSessionInDB]:
         """Returns a list of information about all user session"""
         return self._session.query(UserSessionInDB).all()
-    
+
+    def update(self, user_session: UserSessionInDB) -> None:
+        """Commits changes that have already been assigned to a user session"""
+        self._session.commit()
+        self._session.refresh(user_session)
+
     def delete(self, user_session_id: str):
         """Deletes a UserSessionInDB given the users's id
 
@@ -65,4 +74,3 @@ class UserSessionsDBConnection(DatabaseConnection):
             )
 
         self._session.commit()
-        
