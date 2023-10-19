@@ -7,7 +7,7 @@ from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.models import UserInDB, UserSessionInDB
 from homecontrol_api.exceptions import AuthenticationError
 from homecontrol_api.schemas import LoginPost, User, UserPost, UserSession
-from homecontrol_api.users.security import (
+from homecontrol_api.authentication.security import (
     generate_jwt,
     hash_password,
     verify_jwt,
@@ -15,8 +15,8 @@ from homecontrol_api.users.security import (
 )
 
 
-class UserService(BaseService[HomeControlAPIDatabaseConnection]):
-    """Service for handling users"""
+class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
+    """Service for handling authentication"""
 
     _api_config: APIConfig
 
