@@ -1,18 +1,24 @@
 import uuid
 
+from homecontrol_base.exceptions import DatabaseEntryNotFoundError
 from homecontrol_base.service.core import BaseService
 
-from homecontrol_api.config.api import APIConfig
-from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
-from homecontrol_api.database.models import UserInDB, UserSessionInDB
-from homecontrol_api.exceptions import AuthenticationError
-from homecontrol_api.schemas import LoginPost, User, UserPost, UserSession
+from homecontrol_api.authentication.schemas import (
+    LoginPost,
+    User,
+    UserPost,
+    UserSession,
+)
 from homecontrol_api.authentication.security import (
     generate_jwt,
     hash_password,
     verify_jwt,
     verify_password,
 )
+from homecontrol_api.config.api import APIConfig
+from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
+from homecontrol_api.database.models import UserInDB, UserSessionInDB
+from homecontrol_api.exceptions import AuthenticationError
 
 
 class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
@@ -108,10 +114,14 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             AuthenticationError: If either the username or password is wrong
         """
         # Attempt to obtain the user
-        user = self._db_conn.users.get_by_username(login_info.username)
+        user = None
+        try:
+            user = self._db_conn.users.get_by_username(login_info.username)
+        except DatabaseEntryNotFoundError:
+            pass
         # Now verify the password
-        if not verify_password(login_info.password, user.hashed_password):
-            raise AuthenticationError("Invalid password")
+        if not user or not verify_password(login_info.password, user.hashed_password):
+            raise AuthenticationError("Invalid username or password")
 
         # If got here, can create a new session
         return self._create_user_session(user)
@@ -157,6 +167,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
 
         Returns:
             UserSession: Updated session for the user to use
+
+        Raises:
+            AuthenticationError: If the token has expired, or is no longer
+                                 valid for the session it was made for
         """
 
         # Verify the token

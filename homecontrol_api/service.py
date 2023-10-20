@@ -31,6 +31,12 @@ class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
 
 @contextmanager
 def create_homecontrol_api_service() -> HomeControlAPIService:
-    """Creates an instance of HomeControlAPIService"""
+    """Creates an instance of HomeControlAPIService (for use in scripts)"""
+    with homecontrol_api_db.connect() as conn:
+        yield HomeControlAPIService(conn)
+
+
+def get_homecontrol_api_service() -> HomeControlAPIService:
+    """Creates an instance of HomeControlAPIService (for use in FastAPI)"""
     with homecontrol_api_db.connect() as conn:
         yield HomeControlAPIService(conn)

@@ -4,7 +4,7 @@ from homecontrol_base.database.homecontrol_base.database import (
 )
 
 from homecontrol_api.database.database import database as homecontrol_api_db
-from homecontrol_api.schemas import LoginPost, UserAccountType, UserPost
+from homecontrol_api.authentication.schemas import LoginPost, UserAccountType, UserPost
 from homecontrol_api.service import create_homecontrol_api_service
 
 homecontrol_base_db.create_tables()
