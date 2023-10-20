@@ -1,3 +1,6 @@
+from fastapi import status
+
+
 class APIError(Exception):
     """Custom error for homecontrol-api to be picked up by a custom exception
     handler"""
@@ -11,4 +14,4 @@ class APIError(Exception):
 class AuthenticationError(APIError):
     """Raised when authentication fails"""
 
-    status_code = 403
+    status_code = status.HTTP_401_UNAUTHORIZED
