@@ -79,19 +79,29 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             seconds_to_expire=self._api_config.security.access_token_expiry,
         )
 
-    def _generate_refresh_token(self, session_id: str) -> str:
-        """Generates an refresh token"""
+    def _generate_refresh_token(self, session_id: str, long_lived: bool) -> str:
+        """Generates an refresh token
+
+        Args:
+            session_id (str): ID of the session the refresh token should be
+                              tied to
+            long_lived (bool): Whether to take the (potentially) longer expiry
+                               time
+        """
         return generate_jwt(
             payload={"session_id": str(session_id)},
             key=self._api_config.security.jwt_key,
-            seconds_to_expire=self._api_config.security.refresh_token_expiry,
+            seconds_to_expire=self._api_config.security.long_lived_refresh_token_expiry
+            if long_lived
+            else self._api_config.security.refresh_token_expiry,
         )
 
-    def _create_user_session(self, user: User) -> UserSession:
+    def _create_user_session(self, user: User, long_lived: bool) -> UserSession:
         """Creates a session for a given User (assumes authentication already done)
 
         Args:
             user (User): User to create the session for
+            long_lived (bool): Whether the session should be long lived
 
         Returns:
             UserSession: The user's new session
@@ -102,7 +112,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             id=session_id,
             user_id=user.id,
             access_token=self._generate_access_token(session_id),
-            refresh_token=self._generate_refresh_token(session_id),
+            refresh_token=self._generate_refresh_token(
+                session_id, long_lived=long_lived
+            ),
+            long_lived=long_lived,
         )
         # Save in the db
         user_session = self._db_conn.user_sessions.create(user_session)
@@ -131,7 +144,13 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             raise AuthenticationError("Invalid username or password")
 
         # If got here, can create a new session
-        return self._create_user_session(user)
+        return self._create_user_session(
+            user,
+            # Don't allow admins to have long sessions
+            long_lived=login_info.long_lived
+            if user.account_type != UserAccountType.ADMIN
+            else False,
+        )
 
     def authenticate_user_session(self, access_token: str) -> UserSession:
         """Authenticate a user session using an access token
@@ -215,10 +234,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # If reached here - the refresh token is valid, so update the
         # access and refresh tokens with new ones
         user_session.access_token = self._generate_access_token(
-            session_id=str(user_session.id)
+            session_id=str(user_session.id), long_lived=user_session.long_lived
         )
         user_session.refresh_token = self._generate_refresh_token(
-            session_id=str(user_session.id)
+            session_id=str(user_session.id), long_lived=user_session.long_lived
         )
         self._db_conn.user_sessions.update(user_session)
 

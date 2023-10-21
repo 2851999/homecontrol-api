@@ -25,7 +25,7 @@ class UserPost(BaseModel):
 
 
 class LoginPost(UserPost):
-    """"""
+    long_lived: bool
 
 
 class RefreshPost(BaseModel):

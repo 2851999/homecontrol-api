@@ -24,9 +24,12 @@ async def get_token_from_header(authorization: Annotated[str, Header()]):
     return auth[1]
 
 
+APIService = Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)]
+AccessToken = Annotated[str, Depends(get_token_from_header)]
+
+
 async def verify_current_user_session(
-    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
-    access_token: Annotated[str, Depends(get_token_from_header)],
+    api_service: APIService, access_token: AccessToken
 ) -> User:
     """Returns the current user session (while also ensuring they are
     authenticated)"""
@@ -34,8 +37,7 @@ async def verify_current_user_session(
 
 
 async def verify_current_user(
-    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
-    access_token: Annotated[str, Depends(get_token_from_header)],
+    api_service: APIService, access_token: AccessToken
 ) -> User:
     """Returns the current user (while also ensuring they are authenticated)"""
     return api_service.auth.authenticate_user(access_token=access_token)
@@ -58,7 +60,6 @@ verify_admin_user = _create_user_dep(UserAccountType.ADMIN)
 AnySession = Annotated[UserSession, Depends(verify_current_user_session)]
 AnyUser = Annotated[User, Depends(verify_current_user)]
 AdminUser = Annotated[User, Depends(verify_admin_user)]
-APIService = Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)]
 
 
 @auth.get("/user", summary="Check authentication")

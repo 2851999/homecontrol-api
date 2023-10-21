@@ -23,3 +23,4 @@ class UserSessionInDB(Base):
     user_id = Column(Uuid(as_uuid=True), index=True)
     access_token = Column(String)
     refresh_token = Column(String)
+    long_lived = Column(Boolean)
