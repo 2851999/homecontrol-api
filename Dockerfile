@@ -1,11 +1,11 @@
 FROM python:3.11
 
-WORKDIR /homecontrol
+WORKDIR /homecontrol-api
 
-COPY ./requirements.txt /homecontrol/requirements.txt
+COPY ./requirements.txt /homecontrol-api/requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /homecontrol/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /homecontrol-api/requirements.txt
 
-COPY ./homecontrol_api /homecontrol/homecontrol_api
+COPY ./homecontrol_api /homecontrol-api/homecontrol_api
 
 CMD ["uvicorn", "homecontrol_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
