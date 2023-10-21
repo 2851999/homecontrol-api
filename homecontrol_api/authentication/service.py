@@ -6,6 +6,7 @@ from homecontrol_base.service.core import BaseService
 from homecontrol_api.authentication.schemas import (
     LoginPost,
     User,
+    UserAccountType,
     UserPost,
     UserSession,
 )
@@ -53,11 +54,17 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             User: Created user
         """
 
+        # Is this the first user? - if so create an enabled admin, otherwise
+        # a default account that is disabled
+        first_user = self._db_conn.users.count() == 0
+        account_type = UserAccountType.ADMIN if first_user else UserAccountType.DEFAULT
+
         # Create the database model
         user = UserInDB(
             username=user_info.username,
             hashed_password=hash_password(user_info.password),
-            account_type=user_info.account_type,
+            account_type=account_type,
+            enabled=first_user,
         )
         # Add to the database
         user = self._db_conn.users.create(user)
@@ -157,7 +164,8 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         """Authenticate a user using an access token
 
         Will validate the access token and use it to check the user has a
-        valid session then return the user from that session.
+        valid session then return the user from that session while ensuring it
+        is also enabled.
 
 
         Args:
@@ -171,9 +179,12 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
                                  valid for the session it was made for
         """
 
-        return self._get_user(
-            str(self.authenticate_session(access_token=access_token).user_id)
+        user = self._get_user(
+            self.authenticate_user_session(access_token=access_token).user_id
         )
+        if not user.enabled:
+            raise AuthenticationError("User is disabled")
+        return user
 
     def refresh_user_session(self, refresh_token: str) -> UserSession:
         """Refresh a user session given a refresh token

@@ -11,9 +11,7 @@ homecontrol_base_db.create_tables()
 homecontrol_api_db.create_tables()
 
 with create_homecontrol_api_service() as service:
-    user = service.auth.create_user(
-        UserPost(username="Me", password="test", account_type=UserAccountType.ADMIN)
-    )
+    user = service.auth.create_user(UserPost(username="Me", password="test"))
 
     # session = service.user.login(LoginPost(username="Me", password="test"))
     # print(str(session.refresh_token))

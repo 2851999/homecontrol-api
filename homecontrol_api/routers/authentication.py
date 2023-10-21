@@ -7,6 +7,7 @@ from homecontrol_api.authentication.schemas import (
     RefreshPost,
     User,
     UserAccountType,
+    UserPost,
     UserSession,
 )
 from homecontrol_api.exceptions import AuthenticationError
@@ -52,27 +53,36 @@ def _create_user_dep(valid_account_type: UserAccountType):
     return user_dep
 
 
-get_admin_user = _create_user_dep(UserAccountType.ADMIN)
+verify_admin_user = _create_user_dep(UserAccountType.ADMIN)
+
+AnySession = Annotated[UserSession, Depends(verify_current_user_session)]
+AnyUser = Annotated[User, Depends(verify_current_user)]
+AdminUser = Annotated[User, Depends(verify_admin_user)]
+APIService = Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)]
 
 
 @auth.get("/user", summary="Check authentication")
-async def get_user(user: Annotated[User, Depends(verify_current_user)]) -> User:
+async def get_user(user: AnyUser) -> User:
     return user
 
 
+@auth.post("/user", summary="Create user", status_code=status.HTTP_201_CREATED)
+async def create_user(user_info: UserPost, api_service: APIService) -> User:
+    return api_service.auth.create_user(user_info=user_info)
+
+
+@auth.get("/users", summary="Obtain a list of all users")
+async def get_users(user: AdminUser, api_service: APIService) -> list[User]:
+    return api_service.auth._db_conn.users.get_all()
+
+
 @auth.post("/login", summary="Login as a user")
-async def login(
-    login_data: LoginPost,
-    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
-) -> UserSession:
+async def login(login_data: LoginPost, api_service: APIService) -> UserSession:
     return api_service.auth.login(login_data)
 
 
 @auth.post("/refresh", summary="Refresh a user session")
-async def refresh(
-    refresh_data: RefreshPost,
-    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
-) -> UserSession:
+async def refresh(refresh_data: RefreshPost, api_service: APIService) -> UserSession:
     return api_service.auth.refresh_user_session(
         refresh_token=refresh_data.refresh_token
     )
@@ -83,8 +93,5 @@ async def refresh(
     summary="Logout and invalidate the user session",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def logout(
-    current_session: Annotated[UserSession, Depends(verify_current_user_session)],
-    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
-) -> None:
+async def logout(current_session: AnySession, api_service: APIService) -> None:
     api_service.auth.logout(current_session.id)

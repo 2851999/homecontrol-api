@@ -16,17 +16,16 @@ class User(BaseModel):
     id: StringUUID
     username: str
     account_type: UserAccountType
+    enabled: bool
 
 
 class UserPost(BaseModel):
     username: str
     password: str
-    account_type: UserAccountType
 
 
-class LoginPost(BaseModel):
-    username: str
-    password: str
+class LoginPost(UserPost):
+    """"""
 
 
 class RefreshPost(BaseModel):
