@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, status
 
 from homecontrol_api.authentication.schemas import (
     LoginPost,
@@ -23,7 +23,16 @@ async def get_token_from_header(authorization: Annotated[str, Header()]):
     return auth[1]
 
 
-async def get_current_user(
+async def verify_current_user_session(
+    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
+    access_token: Annotated[str, Depends(get_token_from_header)],
+) -> User:
+    """Returns the current user session (while also ensuring they are
+    authenticated)"""
+    return api_service.auth.authenticate_user_session(access_token=access_token)
+
+
+async def verify_current_user(
     api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
     access_token: Annotated[str, Depends(get_token_from_header)],
 ) -> User:
@@ -35,7 +44,7 @@ def _create_user_dep(valid_account_type: UserAccountType):
     """Returns a dependency that gets the current user (while also ensuring
     they are an authenticated with a specified account type)"""
 
-    async def user_dep(user: Annotated[User, Depends(get_current_user)]) -> User:
+    async def user_dep(user: Annotated[User, Depends(verify_current_user)]) -> User:
         if user.account_type != valid_account_type:
             raise AuthenticationError("Insufficient credentials")
         return user
@@ -47,7 +56,7 @@ get_admin_user = _create_user_dep(UserAccountType.ADMIN)
 
 
 @auth.get("/user", summary="Check authentication")
-async def get_user(user: Annotated[User, Depends(get_admin_user)]) -> User:
+async def get_user(user: Annotated[User, Depends(verify_current_user)]) -> User:
     return user
 
 
@@ -67,3 +76,15 @@ async def refresh(
     return api_service.auth.refresh_user_session(
         refresh_token=refresh_data.refresh_token
     )
+
+
+@auth.post(
+    "/logout",
+    summary="Logout and invalidate the user session",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def logout(
+    current_session: Annotated[UserSession, Depends(verify_current_user_session)],
+    api_service: Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)],
+) -> None:
+    api_service.auth.logout(current_session.id)

@@ -126,6 +126,33 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # If got here, can create a new session
         return self._create_user_session(user)
 
+    def authenticate_user_session(self, access_token: str) -> UserSession:
+        """Authenticate a user session using an access token
+
+        Will validate the access token and use it to check the user has a
+        valid session then return the session.
+
+        Args:
+            access_token (str): Access token of the user
+
+        Returns:
+            UserSession: A User session object
+
+        Raises:
+            AuthenticationError: If the token has expired, or is no longer
+                                 valid for the session it was made for
+        """
+        # Verify the token
+        payload = verify_jwt(access_token, self._api_config.security.jwt_key)
+        # Obtain the session
+        session = self._db_conn.user_sessions.get(payload["session_id"])
+
+        # Verify the token is the one for the session
+        if session.access_token != access_token:
+            raise AuthenticationError("Invalid token")
+
+        return UserSession.model_validate(session)
+
     def authenticate_user(self, access_token: str) -> User:
         """Authenticate a user using an access token
 
@@ -144,17 +171,9 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
                                  valid for the session it was made for
         """
 
-        # Verify the token
-        payload = verify_jwt(access_token, self._api_config.security.jwt_key)
-        # Obtain the session
-        session = self._db_conn.user_sessions.get(payload["session_id"])
-
-        # Verify the token is the one for the session
-        if session.access_token != access_token:
-            raise AuthenticationError("Invalid token")
-
-        # If reached here - the user is authenticated, so return their object
-        return self._get_user(str(session.user_id))
+        return self._get_user(
+            str(self.authenticate_session(access_token=access_token).user_id)
+        )
 
     def refresh_user_session(self, refresh_token: str) -> UserSession:
         """Refresh a user session given a refresh token
@@ -193,3 +212,13 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         self._db_conn.user_sessions.update(user_session)
 
         return UserSession.model_validate(user_session)
+
+    def logout(self, user_session_id: str) -> None:
+        """Invalidate a user session
+
+        Args:
+            user_session_id (str): ID of the user session to invalidate
+        """
+
+        # Delete the session
+        self._db_conn.user_sessions.delete(user_session_id=user_session_id)

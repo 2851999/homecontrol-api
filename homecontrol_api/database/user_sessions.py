@@ -64,7 +64,7 @@ class UserSessionsDBConnection(DatabaseConnection):
         """
         rows_deleted = (
             self._session.query(UserSessionInDB)
-            .filter(UserSessionInDB.id == UUID(UserSessionInDB))
+            .filter(UserSessionInDB.id == UUID(user_session_id))
             .delete()
         )
 
