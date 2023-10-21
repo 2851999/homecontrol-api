@@ -23,17 +23,21 @@ class HomeControlAPIDatabaseConnection(DatabaseConnection):
         if not self._users:
             self._users = UsersDBConnection(self._session)
         return self._users
-    
+
     @property
     def user_sessions(self) -> UserSessionsDBConnection:
         if not self._user_sessions:
             self._user_sessions = UserSessionsDBConnection(self._session)
         return self._user_sessions
 
+
 class HomeControlAPIDatabase(Database[HomeControlAPIDatabaseConnection]):
     """Database for storing information handled by homecontrol-api"""
 
     def __init__(self, config: DatabaseConfig) -> None:
-        super().__init__("homecontrol_api", Base, HomeControlAPIDatabaseConnection, config)
+        super().__init__(
+            "homecontrol_api", Base, HomeControlAPIDatabaseConnection, config
+        )
+
 
 database = HomeControlAPIDatabase(DatabaseConfig())

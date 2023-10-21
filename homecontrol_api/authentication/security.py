@@ -17,16 +17,21 @@ def verify_password(password: str, hash: bytes) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hash)
 
 
-def generate_jwt(payload: dict[str, Any], key: str, seconds_to_expire: int):
+def get_jwt_expiry_time(seconds_to_expiry: int) -> datetime:
+    """Returns the datetime of expiry from now"""
+    return datetime.utcnow() + timedelta(seconds=seconds_to_expiry)
+
+
+def generate_jwt(payload: dict[str, Any], key: str, seconds_to_expiry: int):
     """Generates a jwt given the payload and key
 
     Args:
         payload (dict[str, Any]): Payload to store in the token ('exp' will be
                                   added automatically)
         key (str): Key to encrypt with
-        seconds_to_expire (str): Time in seconds before the token expires
+        seconds_to_expiry (str): Time in seconds before the token expires
     """
-    payload["exp"] = datetime.utcnow() + timedelta(seconds=seconds_to_expire)
+    payload["exp"] = get_jwt_expiry_time(seconds_to_expiry)
     return jwt.encode(payload=payload, key=key, algorithm="HS256")
 
 

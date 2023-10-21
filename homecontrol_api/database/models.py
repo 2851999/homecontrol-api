@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, Column, LargeBinary, String, Uuid
+from sqlalchemy import Boolean, Column, DateTime, LargeBinary, String, Uuid
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -24,3 +24,4 @@ class UserSessionInDB(Base):
     access_token = Column(String)
     refresh_token = Column(String)
     long_lived = Column(Boolean)
+    expiry_time = Column(DateTime)

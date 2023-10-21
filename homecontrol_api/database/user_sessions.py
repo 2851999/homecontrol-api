@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from homecontrol_base.database.core import DatabaseConnection
@@ -47,6 +48,23 @@ class UserSessionsDBConnection(DatabaseConnection):
     def get_all(self) -> list[UserSessionInDB]:
         """Returns a list of information about all user session"""
         return self._session.query(UserSessionInDB).all()
+
+    def delete_sessions_expired_before(self, time: datetime) -> int:
+        """Delete's all sessions that expired before a particular time
+
+        Args:
+            time (datetime): Time before which sessions should be deleted
+
+        Returns:
+            int: Number of rows deleted
+        """
+        rows_deleted = (
+            self._session.query(UserSessionInDB)
+            .filter(UserSessionInDB.expiry_time < time)
+            .delete()
+        )
+        self._session.commit()
+        return rows_deleted
 
     def update(self, user_session: UserSessionInDB) -> None:
         """Commits changes that have already been assigned to a user session"""

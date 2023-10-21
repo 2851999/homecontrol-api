@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Optional
+from typing import Generator, Optional
 
 from homecontrol_base.service.core import BaseService
 
@@ -30,7 +30,7 @@ class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
 
 
 @contextmanager
-def create_homecontrol_api_service() -> HomeControlAPIService:
+def create_homecontrol_api_service() -> Generator[HomeControlAPIService, None, None]:
     """Creates an instance of HomeControlAPIService (for use in scripts)"""
     with homecontrol_api_db.connect() as conn:
         yield HomeControlAPIService(conn)

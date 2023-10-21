@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from homecontrol_base.exceptions import DatabaseEntryNotFoundError
 from homecontrol_base.service.core import BaseService
@@ -12,6 +13,7 @@ from homecontrol_api.authentication.schemas import (
 )
 from homecontrol_api.authentication.security import (
     generate_jwt,
+    get_jwt_expiry_time,
     hash_password,
     verify_jwt,
     verify_password,
@@ -76,7 +78,15 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         return generate_jwt(
             payload={"session_id": str(session_id)},
             key=self._api_config.security.jwt_key,
-            seconds_to_expire=self._api_config.security.access_token_expiry,
+            seconds_to_expiry=self._api_config.security.access_token_expiry,
+        )
+
+    def _get_refresh_expiry_seconds(self, long_lived: bool) -> int:
+        """Returns the refresh token expiry time from the settings"""
+        return (
+            self._api_config.security.long_lived_refresh_token_expiry
+            if long_lived
+            else self._api_config.security.refresh_token_expiry
         )
 
     def _generate_refresh_token(self, session_id: str, long_lived: bool) -> str:
@@ -91,9 +101,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         return generate_jwt(
             payload={"session_id": str(session_id)},
             key=self._api_config.security.jwt_key,
-            seconds_to_expire=self._api_config.security.long_lived_refresh_token_expiry
-            if long_lived
-            else self._api_config.security.refresh_token_expiry,
+            seconds_to_expiry=self._get_refresh_expiry_seconds(long_lived),
         )
 
     def _create_user_session(self, user: User, long_lived: bool) -> UserSession:
@@ -116,6 +124,9 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
                 session_id, long_lived=long_lived
             ),
             long_lived=long_lived,
+            expiry_time=get_jwt_expiry_time(
+                seconds_to_expiry=self._get_refresh_expiry_seconds(long_lived)
+            ),
         )
         # Save in the db
         user_session = self._db_conn.user_sessions.create(user_session)
@@ -234,10 +245,15 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # If reached here - the refresh token is valid, so update the
         # access and refresh tokens with new ones
         user_session.access_token = self._generate_access_token(
-            session_id=str(user_session.id), long_lived=user_session.long_lived
+            session_id=str(user_session.id)
         )
         user_session.refresh_token = self._generate_refresh_token(
             session_id=str(user_session.id), long_lived=user_session.long_lived
+        )
+        user_session.expiry_time = expiry_time = get_jwt_expiry_time(
+            seconds_to_expiry=self._get_refresh_expiry_seconds(
+                long_lived=user_session.long_lived
+            )
         )
         self._db_conn.user_sessions.update(user_session)
 
@@ -252,3 +268,8 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
 
         # Delete the session
         self._db_conn.user_sessions.delete(user_session_id=user_session_id)
+
+    def delete_all_expired_sessions(self) -> None:
+        """Delete all expired sessions from the database"""
+
+        self._db_conn.user_sessions.delete_sessions_expired_before(datetime.utcnow())
