@@ -15,3 +15,9 @@ class AuthenticationError(APIError):
     """Raised when authentication fails"""
 
     status_code = status.HTTP_401_UNAUTHORIZED
+
+
+class InsufficientCredentialsError(APIError):
+    """Raised when a user has insufficient credentials to access a resource"""
+
+    status_code = status.HTTP_403_FORBIDDEN

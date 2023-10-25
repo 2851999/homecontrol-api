@@ -10,7 +10,7 @@ from homecontrol_api.authentication.schemas import (
     UserPost,
     UserSession,
 )
-from homecontrol_api.exceptions import AuthenticationError
+from homecontrol_api.exceptions import AuthenticationError, InsufficientCredentialsError
 from homecontrol_api.service import HomeControlAPIService, get_homecontrol_api_service
 
 auth = APIRouter(prefix="/auth", tags=["auth"])
@@ -49,7 +49,7 @@ def _create_user_dep(valid_account_type: UserAccountType):
 
     async def user_dep(user: Annotated[User, Depends(verify_current_user)]) -> User:
         if user.account_type != valid_account_type:
-            raise AuthenticationError("Insufficient credentials")
+            raise InsufficientCredentialsError("Insufficient credentials")
         return user
 
     return user_dep

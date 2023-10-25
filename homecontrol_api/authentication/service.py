@@ -154,6 +154,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         if not user or not verify_password(login_info.password, user.hashed_password):
             raise AuthenticationError("Invalid username or password")
 
+        # Ensure the account is active
+        if not user.enabled:
+            raise AuthenticationError("Account is disabled. Please contact an admin.")
+
         # If got here, can create a new session
         return self._create_user_session(
             user,
