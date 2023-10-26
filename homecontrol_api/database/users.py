@@ -1,7 +1,11 @@
 from uuid import UUID
 
 from homecontrol_base.database.core import DatabaseConnection
-from homecontrol_base.exceptions import DatabaseEntryNotFoundError
+from homecontrol_base.exceptions import (
+    DatabaseEntryNotFoundError,
+    DatabaseDuplicateEntryFoundError,
+)
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from homecontrol_api.database.models import UserInDB
@@ -14,9 +18,23 @@ class UsersDBConnection(DatabaseConnection):
         super().__init__(session)
 
     def create(self, user: UserInDB) -> UserInDB:
-        """Adds a UserInDB to the database"""
+        """Adds a UserInDB to the database
+
+        Args:
+            user (UserInDB): User to add to the database
+
+        Raises:
+            DatabaseEntryNotFoundError: If the user isn't present in the database
+        """
         self._session.add(user)
-        self._session.commit()
+
+        try:
+            self._session.commit()
+        except IntegrityError:
+            self._session.rollback()
+            raise DatabaseDuplicateEntryFoundError(
+                f"User with the username '{user.username}' already exists"
+            )
         self._session.refresh(user)
         return user
 

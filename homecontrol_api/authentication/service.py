@@ -1,7 +1,10 @@
 import uuid
 from datetime import datetime
 
-from homecontrol_base.exceptions import DatabaseEntryNotFoundError
+from homecontrol_base.exceptions import (
+    DatabaseDuplicateEntryFoundError,
+    DatabaseEntryNotFoundError,
+)
 from homecontrol_base.service.core import BaseService
 
 from homecontrol_api.authentication.schemas import (
@@ -21,7 +24,7 @@ from homecontrol_api.authentication.security import (
 from homecontrol_api.config.api import APIConfig
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.models import UserInDB, UserSessionInDB
-from homecontrol_api.exceptions import AuthenticationError
+from homecontrol_api.exceptions import AuthenticationError, UsernameAlreadyExistsError
 
 
 class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
@@ -69,7 +72,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             enabled=first_user,
         )
         # Add to the database
-        user = self._db_conn.users.create(user)
+        try:
+            user = self._db_conn.users.create(user)
+        except DatabaseDuplicateEntryFoundError as exc:
+            raise UsernameAlreadyExistsError(str(exc)) from exc
         # Return the created user
         return User.model_validate(user)
 
