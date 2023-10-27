@@ -87,6 +87,11 @@ class UsersDBConnection(DatabaseConnection):
         """Returns the number of users in the database"""
         return self._session.query(UserInDB).count()
 
+    def update(self, user: UserInDB) -> None:
+        """Commits changes that have already been assigned to a user"""
+        self._session.commit()
+        self._session.refresh(user)
+
     def delete(self, user_id: str):
         """Deletes a UserInDB given the users's id
 

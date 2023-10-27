@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from importlib.metadata import version
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exception_handlers import http_exception_handler
@@ -25,7 +26,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, version=version("homecontrol_api"))
 
 app.add_middleware(
     CORSMiddleware,

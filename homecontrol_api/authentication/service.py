@@ -11,6 +11,7 @@ from homecontrol_api.authentication.schemas import (
     LoginPost,
     User,
     UserAccountType,
+    UserPatch,
     UserPost,
     UserSession,
 )
@@ -78,6 +79,36 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             raise UsernameAlreadyExistsError(str(exc)) from exc
         # Return the created user
         return User.model_validate(user)
+
+    def update_user(self, user_id: str, user_data: UserPatch) -> User:
+        """Updates a user
+
+        Args:
+            user_id (str): ID of the user to update
+            user_data (UserPatch): Data to update in the user
+        """
+
+        # Obtain the user
+        user = self._db_conn.users.get(user_id)
+
+        # Update their data
+        if user_data.account_type is not None:
+            user.account_type = user_data.account_type
+        if user_data.enabled is not None:
+            user.enabled = user_data.enabled
+
+        # Update and return the updated data
+        self._db_conn.users.update(user)
+        return User.model_validate(user)
+
+    def delete_user(self, user_id: str) -> None:
+        """Deletes a user
+
+        Args:
+            user_id (str): ID of the user to delete
+        """
+        # TODO: Delete sessions as well?
+        self._db_conn.users.delete(user_id)
 
     def _generate_access_token(self, session_id: str) -> str:
         """Generates an access token"""

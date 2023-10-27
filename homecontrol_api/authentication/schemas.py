@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,6 +23,11 @@ class User(BaseModel):
 class UserPost(BaseModel):
     username: str
     password: str
+
+
+class UserPatch(BaseModel):
+    account_type: Optional[UserAccountType] = None
+    enabled: Optional[bool] = None
 
 
 class LoginPost(UserPost):

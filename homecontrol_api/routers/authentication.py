@@ -7,6 +7,7 @@ from homecontrol_api.authentication.schemas import (
     RefreshPost,
     User,
     UserAccountType,
+    UserPatch,
     UserPost,
     UserSession,
 )
@@ -70,6 +71,21 @@ async def get_user(user: AnyUser) -> User:
 @auth.post("/user", summary="Create user", status_code=status.HTTP_201_CREATED)
 async def create_user(user_info: UserPost, api_service: APIService) -> User:
     return api_service.auth.create_user(user_info=user_info)
+
+
+@auth.patch("/user/{user_id}")
+async def patch_user(
+    user_id: str, user_data: UserPatch, user: AdminUser, api_service: APIService
+):
+    return api_service.auth.update_user(user_id=user_id, user_data=user_data)
+
+
+@auth.delete("/user/{user_id}")
+async def delete_user(user_id: str, user: AnyUser, api_service: APIService):
+    # Only allow an admin to delete users that are not themselves
+    if user.id != user_id and user.account_type != UserAccountType.ADMIN:
+        raise InsufficientCredentialsError("Insufficient credentials")
+    return api_service.auth.delete_user(user_id)
 
 
 @auth.get("/users", summary="Obtain a list of all users")
