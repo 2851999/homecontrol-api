@@ -27,3 +27,9 @@ class UsernameAlreadyExistsError(APIError):
     """Raised when attempting to create a user with a username that already exists"""
 
     status_code = status.HTTP_409_CONFLICT
+
+
+class DeviceNotFoundError(APIError):
+    """Raised when attempting to obtain a device but it isn't found"""
+
+    status_code = status.HTTP_404_NOT_FOUND

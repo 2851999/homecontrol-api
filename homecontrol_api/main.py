@@ -4,17 +4,20 @@ from importlib.metadata import version
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
+from homecontrol_base.aircon.manager import ACManager
+from homecontrol_base.broadlink.manager import BroadlinkManager
 from homecontrol_base.database.homecontrol_base.database import (
     database as homecontrol_base_db,
 )
+from homecontrol_base.hue.manager import HueManager
 
 from homecontrol_api.database.database import database as homecontrol_api_db
 from homecontrol_api.exceptions import APIError
-from homecontrol_api.routers.authentication import auth
+from homecontrol_api.routers.auth import auth
+from homecontrol_api.routers.devices.aircon import aircon
 from homecontrol_api.service import create_homecontrol_api_service
 
 
-@asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure all tables in database are created
     homecontrol_base_db.create_tables()
@@ -23,6 +26,16 @@ async def lifespan(app: FastAPI):
     # Delete any expired user sessions
     with create_homecontrol_api_service() as service:
         service.auth.delete_all_expired_sessions()
+
+    # Load and add managers (keeps devices in memory to keep authentication
+    # - specifically needed for Midea AC units as the authentication takes
+    # a while)
+
+    # Load all immediately
+    app.state.ac_manager: ACManager = ACManager(lazy_load=False)
+    app.state.hue_manager: HueManager = HueManager()
+    app.state.broadlink_manager: BroadlinkManager = BroadlinkManager()
+
     yield
 
 
@@ -37,6 +50,7 @@ app.add_middleware(
 )
 
 app.include_router(auth)
+app.include_router(aircon)
 
 
 @app.exception_handler(APIError)
