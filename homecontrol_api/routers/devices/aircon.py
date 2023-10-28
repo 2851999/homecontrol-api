@@ -21,13 +21,15 @@ async def get_units(user: AnyUser, base_service: BaseService) -> list[ACDevice]:
 
 
 @aircon.post(path="/", summary="Register an air conditioning device")
-def register_unit(
+async def register_unit(
     device_info: ACDevicePost, user: AdminUser, base_service: BaseService
 ) -> ACDevice:
     try:
         # The AC manager returns the actual device, not the database entry
-        return base_service.aircon.add_device(
-            name=device_info.name, ip_address=str(device_info.ip_address)
+        return (
+            await base_service.aircon.add_device(
+                name=device_info.name, ip_address=str(device_info.ip_address)
+            )
         ).get_info()
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc

@@ -31,8 +31,9 @@ async def lifespan(app: FastAPI):
     # - specifically needed for Midea AC units as the authentication takes
     # a while)
 
-    # Load all immediately
     app.state.ac_manager: ACManager = ACManager(lazy_load=False)
+    # Load all immediately
+    await app.state.ac_manager.initialise_all_devices()
     app.state.hue_manager: HueManager = HueManager()
     app.state.broadlink_manager: BroadlinkManager = BroadlinkManager()
 
