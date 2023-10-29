@@ -15,9 +15,12 @@ from homecontrol_api.database.database import database as homecontrol_api_db
 from homecontrol_api.exceptions import APIError
 from homecontrol_api.routers.auth import auth
 from homecontrol_api.routers.devices.aircon import aircon
+from homecontrol_api.routers.devices.broadlink import broadlink
+from homecontrol_api.routers.devices.hue import hue
 from homecontrol_api.service import create_homecontrol_api_service
 
 
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure all tables in database are created
     homecontrol_base_db.create_tables()
@@ -52,6 +55,8 @@ app.add_middleware(
 
 app.include_router(auth)
 app.include_router(aircon)
+app.include_router(hue)
+app.include_router(broadlink)
 
 
 @app.exception_handler(APIError)

@@ -1,6 +1,4 @@
-import json
-
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from homecontrol_base import exceptions as base_exceptions
 
 from homecontrol_api.devices.aircon.schemas import (
@@ -20,12 +18,16 @@ from homecontrol_api.routers.dependencies import AdminUser, AnyUser, BaseService
 aircon = APIRouter(prefix="/devices/aircon", tags=["aircon"])
 
 
-@aircon.get(path="/", summary="Get a list of all aircon devices")
-async def get_device(user: AnyUser, base_service: BaseService) -> list[ACDevice]:
+@aircon.get(path="", summary="Get a list of all aircon devices")
+async def get_devices(user: AnyUser, base_service: BaseService) -> list[ACDevice]:
     return base_service._db_conn.ac_devices.get_all()
 
 
-@aircon.post(path="/", summary="Register an air conditioning device")
+@aircon.post(
+    path="",
+    summary="Register an air conditioning device",
+    status_code=status.HTTP_201_CREATED,
+)
 async def register_device(
     device_info: ACDevicePost, user: AdminUser, base_service: BaseService
 ) -> ACDevice:
@@ -35,7 +37,7 @@ async def register_device(
             await base_service.aircon.add_device(
                 name=device_info.name, ip_address=str(device_info.ip_address)
             )
-        ).get_info()
+        ).info
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
 

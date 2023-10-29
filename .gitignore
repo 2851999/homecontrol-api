@@ -165,6 +165,9 @@ database.json
 hue.json
 api.json
 
+# Local hue cert
+huecert.pem
+
 # Local databases
 homecontrol_base.db
 homecontrol_api.db
