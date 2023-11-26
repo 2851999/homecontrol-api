@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
+from homecontrol_base import exceptions as base_exceptions
 from homecontrol_base.hue import exceptions as hue_exceptions
 from homecontrol_base.hue import structs as hue_structs
 
@@ -10,6 +11,7 @@ from homecontrol_api.devices.hue.schemas import (
     HueBridgeDiscoverInfo,
     HueBridgePost,
 )
+from homecontrol_api.exceptions import DeviceNotFoundError
 from homecontrol_api.routers.dependencies import AdminUser, AnyUser, BaseService
 
 hue = APIRouter(prefix="/devices/hue", tags=["hue"])
@@ -23,12 +25,12 @@ async def discover_bridges(
 
 
 @hue.get(path="", summary="Get a list of all registered  hue bridges")
-async def get_devices(user: AnyUser, base_service: BaseService) -> list[HueBridge]:
+async def get_bridges(user: AnyUser, base_service: BaseService) -> list[HueBridge]:
     return base_service._db_conn.hue_bridges.get_all()
 
 
 @hue.post(path="", summary="Register a hue bridge", status_code=status.HTTP_201_CREATED)
-async def register_device(
+async def register_bridge(
     device_info: HueBridgePost, user: AdminUser, base_service: BaseService
 ) -> Optional[HueBridge]:
     try:
@@ -45,3 +47,17 @@ async def register_device(
             content={"detail": "Button on the bridge should now be pressed"},
             status_code=200,
         )
+
+
+@hue.delete(
+    path="/{bridge_id}",
+    summary="Delete a registered Hue bridge",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_bridge(
+    bridge_id: str, user: AdminUser, base_service: BaseService
+) -> None:
+    try:
+        base_service.hue.remove_bridge(bridge_id)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc

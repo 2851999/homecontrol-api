@@ -31,3 +31,17 @@ async def register_device(
         ).info
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
+
+
+@broadlink.delete(
+    path="/{device_id}",
+    summary="Delete a registered broadlink device",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_device(
+    device_id: str, user: AdminUser, base_service: BaseService
+) -> None:
+    try:
+        base_service.broadlink.remove_device(device_id)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc

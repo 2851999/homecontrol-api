@@ -42,6 +42,20 @@ async def register_device(
         raise DeviceNotFoundError(str(exc)) from exc
 
 
+@aircon.delete(
+    path="/{device_id}",
+    summary="Delete a registered air conditioning device",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_device(
+    device_id: str, user: AdminUser, base_service: BaseService
+) -> None:
+    try:
+        base_service.aircon.remove_device(device_id)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc
+
+
 @aircon.get(path="/{device_id}/state")
 async def get_device_state(
     device_id: str, user: AnyUser, base_service: BaseService

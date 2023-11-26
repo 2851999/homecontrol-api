@@ -91,11 +91,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # Obtain the user
         user = self._db_conn.users.get(user_id)
 
-        # Update their data
-        if user_data.account_type is not None:
-            user.account_type = user_data.account_type
-        if user_data.enabled is not None:
-            user.enabled = user_data.enabled
+        # Assign the new data
+        update_data = user_data.model_dump(exclude_unset=True)
+        for key, value in update_data:
+            setattr(user, key, value)
 
         # Update and return the updated data
         self._db_conn.users.update(user)
