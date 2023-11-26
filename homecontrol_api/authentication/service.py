@@ -93,7 +93,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
 
         # Assign the new data
         update_data = user_data.model_dump(exclude_unset=True)
-        for key, value in update_data:
+        for key, value in update_data.items():
             setattr(user, key, value)
 
         # Update and return the updated data
