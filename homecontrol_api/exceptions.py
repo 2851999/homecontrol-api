@@ -33,3 +33,9 @@ class DeviceNotFoundError(APIError):
     """Raised when attempting to obtain a device but it isn't found"""
 
     status_code = status.HTTP_404_NOT_FOUND
+
+
+class TooManyRequestsError(APIError):
+    """Raised when a request fails due to a rate limit"""
+
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS

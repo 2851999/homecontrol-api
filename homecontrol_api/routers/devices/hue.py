@@ -11,7 +11,7 @@ from homecontrol_api.devices.hue.schemas import (
     HueBridgeDiscoverInfo,
     HueBridgePost,
 )
-from homecontrol_api.exceptions import DeviceNotFoundError
+from homecontrol_api.exceptions import DeviceNotFoundError, TooManyRequestsError
 from homecontrol_api.routers.dependencies import AdminUser, AnyUser, BaseService
 
 hue = APIRouter(prefix="/devices/hue", tags=["hue"])
@@ -21,7 +21,22 @@ hue = APIRouter(prefix="/devices/hue", tags=["hue"])
 async def discover_bridges(
     user: AdminUser, base_service: BaseService
 ) -> list[HueBridgeDiscoverInfo]:
-    return base_service.hue.discover()
+    try:
+        return base_service.hue.discover()
+    except hue_exceptions.HueBridgesDiscoveryError as exc:
+        raise TooManyRequestsError(
+            "Too many requests, try using mDNS for Hue Bridge discovery instead"
+        ) from exc
+
+    # HACKY WAY TO TEST IN DEVELOPMENT - JUST SEND BACK KNOWN (mDNS discovery does not work using
+    # Docker for Windows/WSL - causing rate limit issues with the meethue site)
+    # bridges = base_service._db_conn.hue_bridges.get_all()
+    # return [
+    #     HueBridgeDiscoverInfo(
+    #         id=bridge.identifier, internalipaddress=bridge.ip_address, port=bridge.port
+    #     )
+    #     for bridge in bridges
+    # ]
 
 
 @hue.get(path="", summary="Get a list of all registered  hue bridges")
