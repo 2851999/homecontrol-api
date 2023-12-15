@@ -20,4 +20,5 @@ dependencies = [
     "uvicorn[standard]",
     "bcrypt",
     "pyjwt",
+    "sqlalchemy-json",
 ]

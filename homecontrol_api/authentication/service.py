@@ -58,6 +58,10 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
 
         Returns:
             User: Created user
+
+        Raises:
+            UsernameAlreadyExistsError: If a user with the same username
+                                        already exists
         """
 
         # Is this the first user? - if so create an enabled admin, otherwise
@@ -77,6 +81,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             user = self._db_conn.users.create(user)
         except DatabaseDuplicateEntryFoundError as exc:
             raise UsernameAlreadyExistsError(str(exc)) from exc
+
         # Return the created user
         return User.model_validate(user)
 

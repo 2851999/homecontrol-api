@@ -24,17 +24,18 @@ class UsersDBConnection(DatabaseConnection):
             user (UserInDB): User to add to the database
 
         Raises:
-            DatabaseEntryNotFoundError: If the user isn't present in the database
+            DatabaseDuplicateEntryFoundError: If a user with the same username
+                                            is already present in the database
         """
         self._session.add(user)
 
         try:
             self._session.commit()
-        except IntegrityError:
+        except IntegrityError as exc:
             self._session.rollback()
             raise DatabaseDuplicateEntryFoundError(
                 f"User with the username '{user.username}' already exists"
-            )
+            ) from exc
         self._session.refresh(user)
         return user
 
@@ -93,7 +94,7 @@ class UsersDBConnection(DatabaseConnection):
         self._session.refresh(user)
 
     def delete(self, user_id: str):
-        """Deletes a UserInDB given the users's id
+        """Deletes a UserInDB given the user's id
 
         Args:
             user_id (str): ID of the user

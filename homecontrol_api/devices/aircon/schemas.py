@@ -1,5 +1,3 @@
-from typing import Optional
-
 from homecontrol_base.aircon.state import (
     ACDeviceFanSpeed,
     ACDeviceMode,

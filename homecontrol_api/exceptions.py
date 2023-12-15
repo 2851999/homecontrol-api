@@ -29,6 +29,12 @@ class UsernameAlreadyExistsError(APIError):
     status_code = status.HTTP_409_CONFLICT
 
 
+class NameAlreadyExistsError(APIError):
+    """Raised when attempting to create an entity with a name that already exists"""
+
+    status_code = status.HTTP_409_CONFLICT
+
+
 class DeviceNotFoundError(APIError):
     """Raised when attempting to obtain a device but it isn't found"""
 

@@ -7,6 +7,7 @@ from homecontrol_api.authentication.service import AuthService
 from homecontrol_api.config.api import APIConfig
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.database import database as homecontrol_api_db
+from homecontrol_api.rooms.service import RoomService
 
 
 class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
@@ -14,6 +15,7 @@ class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
 
     _api_config: APIConfig
     _auth: Optional[AuthService] = None
+    _room: Optional[RoomService] = None
 
     def __init__(self, db_conn: HomeControlAPIDatabaseConnection) -> None:
         super().__init__(db_conn)
@@ -24,9 +26,17 @@ class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
 
     @property
     def auth(self) -> AuthService:
+        """Returns an AuthService while caching it"""
         if not self._auth:
             self._auth = AuthService(self._db_conn, self._api_config)
         return self._auth
+
+    @property
+    def room(self) -> RoomService:
+        """Returns an RoomService while caching it"""
+        if not self._room:
+            self._room = RoomService(self._db_conn)
+        return self._room
 
 
 @contextmanager
