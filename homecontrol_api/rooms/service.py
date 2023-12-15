@@ -37,7 +37,18 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
         except DatabaseDuplicateEntryFoundError as exc:
             raise NameAlreadyExistsError(str(exc)) from exc
 
-        print(room)
-
         # Return the created room
         return Room.model_validate(room)
+
+    def get_rooms(self) -> Room:
+        """Returns a list of all available rooms"""
+
+        return self._db_conn.rooms.get_all()
+
+    def delete_room(self, room_id: str) -> None:
+        """Deletes a room
+
+        Args:
+            room_id (str): ID of the room to delete
+        """
+        self._db_conn.rooms.delete(room_id)

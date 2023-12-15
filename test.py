@@ -47,14 +47,3 @@ with create_homecontrol_api_service() as service:
         )
     )
     print(room)
-
-# test = Room.model_validate(
-#     {
-#         "id": uuid.uuid4(),
-#         "name": "test",
-#         "controllers": [
-#             {"control_type": "hue_room", "id": uuid.uuid4(), "bridge_id": uuid.uuid4()}
-#         ],
-#     }
-# )
-# print(test)

@@ -17,6 +17,7 @@ from homecontrol_api.routers.auth import auth
 from homecontrol_api.routers.devices.aircon import aircon
 from homecontrol_api.routers.devices.broadlink import broadlink
 from homecontrol_api.routers.devices.hue import hue
+from homecontrol_api.routers.rooms import rooms
 from homecontrol_api.service import create_homecontrol_api_service
 
 
@@ -57,6 +58,7 @@ app.include_router(auth)
 app.include_router(aircon)
 app.include_router(hue)
 app.include_router(broadlink)
+app.include_router(rooms)
 
 
 @app.exception_handler(APIError)
