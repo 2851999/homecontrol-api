@@ -23,6 +23,13 @@ async def get_devices(user: AnyUser, base_service: BaseService) -> list[ACDevice
     return base_service._db_conn.ac_devices.get_all()
 
 
+@aircon.get(path="/{device_id}")
+async def get_device(
+    device_id: str, user: AnyUser, base_service: BaseService
+) -> ACDevice:
+    return base_service._db_conn.ac_devices.get(device_id)
+
+
 @aircon.post(
     path="",
     summary="Register an air conditioning device",

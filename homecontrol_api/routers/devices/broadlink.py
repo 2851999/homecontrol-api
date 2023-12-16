@@ -18,6 +18,13 @@ async def get_devices(
     return base_service._db_conn.broadlink_devices.get_all()
 
 
+@broadlink.get(path="/{device_id}")
+async def get_device(
+    device_id: str, user: AnyUser, base_service: BaseService
+) -> BroadlinkDevice:
+    return base_service._db_conn.broadlink_devices.get(device_id)
+
+
 @broadlink.post(
     path="", summary="Register a broadlink device", status_code=status.HTTP_201_CREATED
 )

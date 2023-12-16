@@ -1,5 +1,4 @@
 from enum import StrEnum
-import json
 from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer

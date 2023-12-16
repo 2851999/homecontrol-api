@@ -44,6 +44,11 @@ async def get_bridges(user: AnyUser, base_service: BaseService) -> list[HueBridg
     return base_service._db_conn.hue_bridges.get_all()
 
 
+@hue.get(path="/{bridge_id}")
+async def get_bridge(bridge_id: str, base_service: BaseService) -> HueBridge:
+    return base_service._db_conn.hue_bridges.get(bridge_id)
+
+
 @hue.post(path="", summary="Register a hue bridge", status_code=status.HTTP_201_CREATED)
 async def register_bridge(
     device_info: HueBridgePost, user: AdminUser, base_service: BaseService
