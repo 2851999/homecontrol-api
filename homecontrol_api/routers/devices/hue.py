@@ -81,3 +81,25 @@ async def delete_bridge(
         base_service.hue.remove_bridge(bridge_id)
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
+
+
+@hue.get(path="/{bridge_id}/rooms")
+async def get_rooms(
+    bridge_id: str, user: AnyUser, base_service: BaseService
+) -> list[hue_structs.HueRoom]:
+    try:
+        with base_service.hue.get_bridge(bridge_id).connect() as conn:
+            return conn.get_rooms()
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc
+
+
+@hue.get(path="/{bridge_id}/rooms/{room_id}")
+async def get_room(
+    bridge_id: str, room_id: str, user: AnyUser, base_service: BaseService
+) -> hue_structs.HueRoom:
+    try:
+        with base_service.hue.get_bridge(bridge_id).connect() as conn:
+            return conn.get_room(room_id)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc

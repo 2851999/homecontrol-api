@@ -5,10 +5,11 @@ from homecontrol_base.service.homecontrol_base import (
     HomeControlBaseService,
     create_homecontrol_base_service,
 )
-from homecontrol_api.authentication.schemas import User, UserAccountType, UserSession
-from homecontrol_api.exceptions import AuthenticationError, InsufficientCredentialsError
 
-from homecontrol_api.service import HomeControlAPIService, get_homecontrol_api_service
+from homecontrol_api.authentication.schemas import User, UserAccountType, UserSession
+from homecontrol_api.database.database import database as homecontrol_api_db
+from homecontrol_api.exceptions import AuthenticationError, InsufficientCredentialsError
+from homecontrol_api.service.homecontrol_api import HomeControlAPIService
 
 
 async def get_homecontrol_base_service(
@@ -26,6 +27,15 @@ async def get_homecontrol_base_service(
 
 # BaseService from homecontrol-base
 BaseService = Annotated[HomeControlBaseService, Depends(get_homecontrol_base_service)]
+
+
+async def get_homecontrol_api_service(
+    base_service: BaseService,
+) -> HomeControlAPIService:
+    """Creates an instance of HomeControlAPIService (for use in FastAPI)"""
+    with homecontrol_api_db.connect() as conn:
+        yield HomeControlAPIService(conn, base_service)
+
 
 # APIService from homecontrol-api
 APIService = Annotated[HomeControlAPIService, Depends(get_homecontrol_api_service)]

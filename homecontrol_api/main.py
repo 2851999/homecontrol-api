@@ -18,7 +18,7 @@ from homecontrol_api.routers.devices.aircon import aircon
 from homecontrol_api.routers.devices.broadlink import broadlink
 from homecontrol_api.routers.devices.hue import hue
 from homecontrol_api.routers.rooms import rooms
-from homecontrol_api.service import create_homecontrol_api_service
+from homecontrol_api.service.homecontrol_api import create_homecontrol_api_service
 
 
 @asynccontextmanager

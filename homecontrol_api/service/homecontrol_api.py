@@ -1,24 +1,32 @@
 from contextlib import contextmanager
 from typing import Generator, Optional
 
-from homecontrol_base.service.core import BaseService
+from homecontrol_base.service.homecontrol_base import (
+    HomeControlBaseService,
+    create_homecontrol_base_service,
+)
 
 from homecontrol_api.authentication.service import AuthService
 from homecontrol_api.config.api import APIConfig
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.database import database as homecontrol_api_db
 from homecontrol_api.rooms.service import RoomService
+from homecontrol_api.service.core import BaseAPIService
 
 
-class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
+class HomeControlAPIService(BaseAPIService[HomeControlAPIDatabaseConnection]):
     """Service for homecontrol_api"""
 
     _api_config: APIConfig
     _auth: Optional[AuthService] = None
     _room: Optional[RoomService] = None
 
-    def __init__(self, db_conn: HomeControlAPIDatabaseConnection) -> None:
-        super().__init__(db_conn)
+    def __init__(
+        self,
+        db_conn: HomeControlAPIDatabaseConnection,
+        base_service: HomeControlBaseService,
+    ) -> None:
+        super().__init__(db_conn, base_service)
 
         self._api_config = APIConfig()
 
@@ -33,20 +41,20 @@ class HomeControlAPIService(BaseService[HomeControlAPIDatabaseConnection]):
 
     @property
     def room(self) -> RoomService:
-        """Returns an RoomService while caching it"""
+        """Returns a RoomService while caching it"""
         if not self._room:
             self._room = RoomService(self._db_conn)
         return self._room
 
 
 @contextmanager
-def create_homecontrol_api_service() -> Generator[HomeControlAPIService, None, None]:
+def create_homecontrol_api_service(
+    base_service: Optional[HomeControlBaseService] = None,
+) -> Generator[HomeControlAPIService, None, None]:
     """Creates an instance of HomeControlAPIService (for use in scripts)"""
     with homecontrol_api_db.connect() as conn:
-        yield HomeControlAPIService(conn)
-
-
-def get_homecontrol_api_service() -> HomeControlAPIService:
-    """Creates an instance of HomeControlAPIService (for use in FastAPI)"""
-    with homecontrol_api_db.connect() as conn:
-        yield HomeControlAPIService(conn)
+        if base_service:
+            yield HomeControlAPIService(conn, base_service)
+        else:
+            with create_homecontrol_base_service() as new_base_service:
+                yield HomeControlAPIService(conn, new_base_service)
