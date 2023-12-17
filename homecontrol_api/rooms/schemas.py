@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
@@ -55,3 +55,10 @@ class RoomPost(BaseModel):
     def serialize_controllers(self, controllers: list[RoomController]):
         """Serialize controllers to dictionary when giving to the JSON field in the database"""
         return [controller.model_dump() for controller in controllers]
+
+
+class RoomPatch(BaseModel):
+    name: Optional[str] = None
+
+    # TODO: For now all or nothing for simplicity
+    controllers: Optional[list[RoomController]] = None

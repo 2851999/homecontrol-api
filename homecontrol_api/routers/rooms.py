@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from homecontrol_api.rooms.schemas import Room, RoomPost
+from homecontrol_api.rooms.schemas import Room, RoomPatch, RoomPost
 from homecontrol_api.routers.dependencies import AdminUser, AnyUser, APIService
 
 rooms = APIRouter(prefix="/rooms", tags=["rooms"])
@@ -16,6 +16,13 @@ async def create_room(
     room_info: RoomPost, user: AdminUser, api_service: APIService
 ) -> Room:
     return api_service.room.create_room(room_info)
+
+
+@rooms.patch("/{room_id}")
+async def patch_room(
+    room_id: str, room_data: RoomPatch, user: AnyUser, api_service: APIService
+):
+    return api_service.room.update_room(room_id, room_data)
 
 
 @rooms.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT)

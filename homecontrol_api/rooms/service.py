@@ -1,12 +1,11 @@
-import json
-
 from homecontrol_base.exceptions import DatabaseDuplicateEntryFoundError
 from homecontrol_base.service.core import BaseService
+from pydantic import TypeAdapter
 
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.models import RoomInDB
 from homecontrol_api.exceptions import NameAlreadyExistsError
-from homecontrol_api.rooms.schemas import Room, RoomPost
+from homecontrol_api.rooms.schemas import Room, RoomPatch, RoomPost
 
 
 class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
@@ -40,10 +39,30 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
         # Return the created room
         return Room.model_validate(room)
 
-    def get_rooms(self) -> Room:
+    def get_rooms(self) -> list[Room]:
         """Returns a list of all available rooms"""
 
-        return self._db_conn.rooms.get_all()
+        return TypeAdapter(list[Room]).validate_python(self._db_conn.rooms.get_all())
+
+    def update_room(self, room_id: str, room_data: RoomPatch) -> Room:
+        """Updates a room
+
+        Args:
+            room_id (str): ID of the room to update
+            room_data (RoomPatch): Data to update in the room
+        """
+
+        # Obtain the room
+        room = self._db_conn.rooms.get(room_id)
+
+        # Assign the new data
+        update_data = room_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(room, key, value)
+
+        # Update and return the updated data
+        self._db_conn.rooms.update(room)
+        return Room.model_validate(room)
 
     def delete_room(self, room_id: str) -> None:
         """Deletes a room
