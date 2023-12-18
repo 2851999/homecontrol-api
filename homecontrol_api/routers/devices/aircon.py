@@ -20,14 +20,14 @@ aircon = APIRouter(prefix="/devices/aircon", tags=["aircon"])
 
 @aircon.get(path="", summary="Get a list of all aircon devices")
 async def get_devices(user: AnyUser, base_service: BaseService) -> list[ACDevice]:
-    return base_service._db_conn.ac_devices.get_all()
+    return base_service.db_conn.ac_devices.get_all()
 
 
 @aircon.get(path="/{device_id}")
 async def get_device(
     device_id: str, user: AnyUser, base_service: BaseService
 ) -> ACDevice:
-    return base_service._db_conn.ac_devices.get(device_id)
+    return base_service.db_conn.ac_devices.get(device_id)
 
 
 @aircon.post(

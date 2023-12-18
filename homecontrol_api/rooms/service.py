@@ -32,7 +32,7 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
 
         # Add to the database
         try:
-            room = self._db_conn.rooms.create(room)
+            room = self.db_conn.rooms.create(room)
         except DatabaseDuplicateEntryFoundError as exc:
             raise NameAlreadyExistsError(str(exc)) from exc
 
@@ -42,12 +42,12 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
     def get_rooms(self) -> list[Room]:
         """Returns a list of all available rooms"""
 
-        return TypeAdapter(list[Room]).validate_python(self._db_conn.rooms.get_all())
+        return TypeAdapter(list[Room]).validate_python(self.db_conn.rooms.get_all())
 
     def get_room(self, room_id: str) -> Room:
         """Returns a room given its id"""
 
-        return Room.model_validate(self._db_conn.rooms.get(room_id))
+        return Room.model_validate(self.db_conn.rooms.get(room_id))
 
     def update_room(self, room_id: str, room_data: RoomPatch) -> Room:
         """Updates a room
@@ -58,7 +58,7 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
         """
 
         # Obtain the room
-        room = self._db_conn.rooms.get(room_id)
+        room = self.db_conn.rooms.get(room_id)
 
         # Assign the new data
         update_data = room_data.model_dump(exclude_unset=True)
@@ -66,7 +66,7 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
             setattr(room, key, value)
 
         # Update and return the updated data
-        self._db_conn.rooms.update(room)
+        self.db_conn.rooms.update(room)
         return Room.model_validate(room)
 
     def delete_room(self, room_id: str) -> None:
@@ -75,4 +75,4 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
         Args:
             room_id (str): ID of the room to delete
         """
-        self._db_conn.rooms.delete(room_id)
+        self.db_conn.rooms.delete(room_id)

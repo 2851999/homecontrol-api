@@ -22,10 +22,10 @@ class TemperatureService(BaseAPIService[HomeControlAPIDatabaseConnection]):
 
     async def get_outdoor_temperature(self) -> Temperature:
         """Obtains the outdoor temperature (Based on the first available AC unit)"""
-        ac_device_infos = self._base_service._db_conn.ac_devices.get_all()
+        ac_device_infos = self.base_service.db_conn.ac_devices.get_all()
         if len(ac_device_infos) == 0:
             return Temperature(value=None)
-        ac_device = await self._base_service.aircon.get_device(
+        ac_device = await self.base_service.aircon.get_device(
             str(ac_device_infos[0].id)
         )
         ac_state = await ac_device.get_state()
@@ -48,6 +48,6 @@ class TemperatureService(BaseAPIService[HomeControlAPIDatabaseConnection]):
         if ac_device_id is None:
             return Temperature(value=None)
 
-        ac_device = await self._base_service.aircon.get_device(ac_device_id)
+        ac_device = await self.base_service.aircon.get_device(ac_device_id)
         ac_state = await ac_device.get_state()
         return Temperature(value=ac_state.indoor_temperature)

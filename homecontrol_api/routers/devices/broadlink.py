@@ -15,14 +15,14 @@ broadlink = APIRouter(prefix="/devices/broadlink", tags=["broadlink"])
 async def get_devices(
     user: AnyUser, base_service: BaseService
 ) -> list[BroadlinkDevice]:
-    return base_service._db_conn.broadlink_devices.get_all()
+    return base_service.db_conn.broadlink_devices.get_all()
 
 
 @broadlink.get(path="/{device_id}")
 async def get_device(
     device_id: str, user: AnyUser, base_service: BaseService
 ) -> BroadlinkDevice:
-    return base_service._db_conn.broadlink_devices.get(device_id)
+    return base_service.db_conn.broadlink_devices.get(device_id)
 
 
 @broadlink.post(

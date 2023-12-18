@@ -30,7 +30,7 @@ async def discover_bridges(
 
     # HACKY WAY TO TEST IN DEVELOPMENT - JUST SEND BACK KNOWN (mDNS discovery does not work using
     # Docker for Windows/WSL - causing rate limit issues with the meethue site)
-    # bridges = base_service._db_conn.hue_bridges.get_all()
+    # bridges = base_service.db_conn.hue_bridges.get_all()
     # return [
     #     HueBridgeDiscoverInfo(
     #         id=bridge.identifier, internalipaddress=bridge.ip_address, port=bridge.port
@@ -41,12 +41,12 @@ async def discover_bridges(
 
 @hue.get(path="", summary="Get a list of all registered  hue bridges")
 async def get_bridges(user: AnyUser, base_service: BaseService) -> list[HueBridge]:
-    return base_service._db_conn.hue_bridges.get_all()
+    return base_service.db_conn.hue_bridges.get_all()
 
 
 @hue.get(path="/{bridge_id}")
 async def get_bridge(bridge_id: str, base_service: BaseService) -> HueBridge:
-    return base_service._db_conn.hue_bridges.get(bridge_id)
+    return base_service.db_conn.hue_bridges.get(bridge_id)
 
 
 @hue.post(path="", summary="Register a hue bridge", status_code=status.HTTP_201_CREATED)

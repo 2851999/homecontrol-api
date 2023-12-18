@@ -38,23 +38,21 @@ class HomeControlAPIService(BaseAPIService[HomeControlAPIDatabaseConnection]):
     def auth(self) -> AuthService:
         """Returns an AuthService while caching it"""
         if not self._auth:
-            self._auth = AuthService(self._db_conn, self._api_config)
+            self._auth = AuthService(self.db_conn, self._api_config)
         return self._auth
 
     @property
     def room(self) -> RoomService:
         """Returns a RoomService while caching it"""
         if not self._room:
-            self._room = RoomService(self._db_conn)
+            self._room = RoomService(self.db_conn)
         return self._room
 
     @property
     def temperature(self) -> TemperatureService:
         """Returns a TemperatureService while caching it"""
         if not self._room:
-            self._room = TemperatureService(
-                self._db_conn, self._base_service, self.room
-            )
+            self._room = TemperatureService(self.db_conn, self.base_service, self.room)
         return self._room
 
 

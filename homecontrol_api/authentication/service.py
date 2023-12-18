@@ -48,7 +48,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         Raises:
             DatabaseEntryNotFoundError: If the user isn't present in the database
         """
-        return User.model_validate(self._db_conn.users.get(user_id))
+        return User.model_validate(self.db_conn.users.get(user_id))
 
     def create_user(self, user_info: UserPost) -> User:
         """Creates a user
@@ -66,7 +66,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
 
         # Is this the first user? - if so create an enabled admin, otherwise
         # a default account that is disabled
-        first_user = self._db_conn.users.count() == 0
+        first_user = self.db_conn.users.count() == 0
         account_type = UserAccountType.ADMIN if first_user else UserAccountType.DEFAULT
 
         # Create the database model
@@ -78,7 +78,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         )
         # Add to the database
         try:
-            user = self._db_conn.users.create(user)
+            user = self.db_conn.users.create(user)
         except DatabaseDuplicateEntryFoundError as exc:
             raise UsernameAlreadyExistsError(str(exc)) from exc
 
@@ -94,7 +94,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         """
 
         # Obtain the user
-        user = self._db_conn.users.get(user_id)
+        user = self.db_conn.users.get(user_id)
 
         # Assign the new data
         update_data = user_data.model_dump(exclude_unset=True)
@@ -102,7 +102,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             setattr(user, key, value)
 
         # Update and return the updated data
-        self._db_conn.users.update(user)
+        self.db_conn.users.update(user)
         return User.model_validate(user)
 
     def delete_user(self, user_id: str) -> None:
@@ -112,7 +112,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             user_id (str): ID of the user to delete
         """
         # TODO: Delete sessions as well?
-        self._db_conn.users.delete(user_id)
+        self.db_conn.users.delete(user_id)
 
     def _generate_access_token(self, session_id: str) -> str:
         """Generates an access token"""
@@ -170,7 +170,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             ),
         )
         # Save in the db
-        user_session = self._db_conn.user_sessions.create(user_session)
+        user_session = self.db_conn.user_sessions.create(user_session)
         return UserSession.model_validate(user_session)
 
     def login(self, login_info: LoginPost) -> UserSession:
@@ -188,7 +188,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # Attempt to obtain the user
         user = None
         try:
-            user = self._db_conn.users.get_by_username(login_info.username)
+            user = self.db_conn.users.get_by_username(login_info.username)
         except DatabaseEntryNotFoundError:
             pass
         # Now verify the password
@@ -227,7 +227,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # Verify the token
         payload = verify_jwt(access_token, self._api_config.security.jwt_key)
         # Obtain the session
-        session = self._db_conn.user_sessions.get(payload["session_id"])
+        session = self.db_conn.user_sessions.get(payload["session_id"])
 
         # Verify the token is the one for the session
         if session.access_token != access_token:
@@ -281,7 +281,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         # Verify the token
         payload = verify_jwt(refresh_token, self._api_config.security.jwt_key)
         # Obtain the session
-        user_session = self._db_conn.user_sessions.get(payload["session_id"])
+        user_session = self.db_conn.user_sessions.get(payload["session_id"])
 
         # Verify the token is the one for the session
         if user_session.refresh_token != refresh_token:
@@ -295,12 +295,12 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         user_session.refresh_token = self._generate_refresh_token(
             session_id=str(user_session.id), long_lived=user_session.long_lived
         )
-        user_session.expiry_time = expiry_time = get_jwt_expiry_time(
+        user_session.expiry_time = get_jwt_expiry_time(
             seconds_to_expiry=self._get_refresh_expiry_seconds(
                 long_lived=user_session.long_lived
             )
         )
-        self._db_conn.user_sessions.update(user_session)
+        self.db_conn.user_sessions.update(user_session)
 
         return UserSession.model_validate(user_session)
 
@@ -312,9 +312,9 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         """
 
         # Delete the session
-        self._db_conn.user_sessions.delete(user_session_id=user_session_id)
+        self.db_conn.user_sessions.delete(user_session_id=user_session_id)
 
     def delete_all_expired_sessions(self) -> None:
         """Delete all expired sessions from the database"""
 
-        self._db_conn.user_sessions.delete_sessions_expired_before(datetime.utcnow())
+        self.db_conn.user_sessions.delete_sessions_expired_before(datetime.utcnow())

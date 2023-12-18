@@ -47,7 +47,7 @@ async def delete_user(user_id: str, user: AnyUser, api_service: APIService):
 
 @auth.get("/users", summary="Obtain a list of all users")
 async def get_users(user: AdminUser, api_service: APIService) -> list[User]:
-    return api_service.auth._db_conn.users.get_all()
+    return api_service.auth.db_conn.users.get_all()
 
 
 @auth.post("/login", summary="Login as a user")

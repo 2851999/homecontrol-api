@@ -33,7 +33,7 @@ homecontrol_api_db.create_tables()
 
 #     #     print(str(session.refresh_token))
 #     #     print(str(new_session.refresh_token))
-#     #     print(str(service.user._db_conn.user_sessions.get(str(session.id)).refresh_token))
+#     #     print(str(service.user.db_conn.user_sessions.get(str(session.id)).refresh_token))
 
 #     # room = service.room.create_room(
 #     #     RoomPost.model_validate(
