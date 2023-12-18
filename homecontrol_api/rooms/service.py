@@ -44,6 +44,11 @@ class RoomService(BaseService[HomeControlAPIDatabaseConnection]):
 
         return TypeAdapter(list[Room]).validate_python(self._db_conn.rooms.get_all())
 
+    def get_room(self, room_id: str) -> Room:
+        """Returns a room given its id"""
+
+        return Room.model_validate(self._db_conn.rooms.get(room_id))
+
     def update_room(self, room_id: str, room_data: RoomPatch) -> Room:
         """Updates a room
 

@@ -18,11 +18,15 @@ from homecontrol_api.routers.devices.aircon import aircon
 from homecontrol_api.routers.devices.broadlink import broadlink
 from homecontrol_api.routers.devices.hue import hue
 from homecontrol_api.routers.rooms import rooms
+from homecontrol_api.routers.temperature import temperature
 from homecontrol_api.service.homecontrol_api import create_homecontrol_api_service
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app_instance: FastAPI):
+    """Used to setup the database, delete expired sessions and initialise
+    devices when starting"""
+
     # Ensure all tables in database are created
     homecontrol_base_db.create_tables()
     homecontrol_api_db.create_tables()
@@ -35,11 +39,11 @@ async def lifespan(app: FastAPI):
     # - specifically needed for Midea AC units as the authentication takes
     # a while)
 
-    app.state.ac_manager: ACManager = ACManager(lazy_load=False)
+    app_instance.state.ac_manager: ACManager = ACManager(lazy_load=False)
     # Load all immediately
-    await app.state.ac_manager.initialise_all_devices()
-    app.state.hue_manager: HueManager = HueManager()
-    app.state.broadlink_manager: BroadlinkManager = BroadlinkManager()
+    await app_instance.state.ac_manager.initialise_all_devices()
+    app_instance.state.hue_manager: HueManager = HueManager()
+    app_instance.state.broadlink_manager: BroadlinkManager = BroadlinkManager()
 
     yield
 
@@ -59,6 +63,7 @@ app.include_router(aircon)
 app.include_router(hue)
 app.include_router(broadlink)
 app.include_router(rooms)
+app.include_router(temperature)
 
 
 @app.exception_handler(APIError)
