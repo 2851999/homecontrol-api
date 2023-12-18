@@ -5,7 +5,7 @@ from homecontrol_api.devices.aircon.schemas import (
     ACDevice,
     ACDevicePost,
     ACDeviceState,
-    ACDeviceStatePost,
+    ACDeviceStatePut,
 )
 from homecontrol_api.exceptions import DeviceNotFoundError
 from homecontrol_api.routers.dependencies import AdminUser, AnyUser, BaseService
@@ -71,9 +71,9 @@ async def get_device_state(
     return await device.get_state()
 
 
-@aircon.post(path="/{device_id}/state")
-async def post_device_state(
-    device_id: str, state: ACDeviceStatePost, user: AnyUser, base_service: BaseService
+@aircon.put(path="/{device_id}/state")
+async def put_device_state(
+    device_id: str, state: ACDeviceStatePut, user: AnyUser, base_service: BaseService
 ) -> ACDeviceState:
     device = await base_service.aircon.get_device(device_id=device_id)
     await device.set_state(state=state)

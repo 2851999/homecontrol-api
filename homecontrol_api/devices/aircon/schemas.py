@@ -38,7 +38,7 @@ class ACDeviceState(BaseModel):
     display_on: bool
 
 
-class ACDeviceStatePost(BaseModel):
+class ACDeviceStatePut(BaseModel):
     # Read and write
     power: bool
     target_temperature: float
