@@ -103,3 +103,14 @@ async def get_room(
             return conn.get_room(room_id)
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
+
+
+@hue.get(path="/{bridge_id}/rooms/{room_id}/state")
+async def get_room_state(
+    bridge_id: str, room_id: str, user: AnyUser, base_service: BaseService
+):
+    try:
+        with base_service.hue.get_bridge(bridge_id).connect() as conn:
+            return conn.get_room_state(room_id)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc
