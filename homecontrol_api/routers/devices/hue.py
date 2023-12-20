@@ -114,3 +114,18 @@ async def get_room_state(
             return conn.get_room_state(room_id)
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
+
+
+@hue.patch(path="/{bridge_id}/rooms/{room_id}/state")
+async def set_room_state(
+    bridge_id: str,
+    room_id: str,
+    update_data: hue_structs.HueRoomStateUpdate,
+    user: AnyUser,
+    base_service: BaseService,
+):
+    try:
+        with base_service.hue.get_bridge(bridge_id).connect() as conn:
+            return conn.set_room_state(room_id=room_id, update_data=update_data)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc
