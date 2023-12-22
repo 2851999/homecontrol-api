@@ -171,3 +171,10 @@ huecert.pem
 # Local databases
 homecontrol_base.db
 homecontrol_api.db
+
+# Production config
+/config_prod
+.env.prod
+
+# Production (Test) data
+./postgres-data

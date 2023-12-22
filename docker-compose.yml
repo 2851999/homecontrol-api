@@ -4,7 +4,6 @@ services:
   api:
     build: .
     working_dir: /homecontrol-api
-    command: "uvicorn homecontrol_api.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - ./:/homecontrol-api
     # Doesn't work on Windows - so still cant use mDNS for Hue Bridges
