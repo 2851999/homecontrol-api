@@ -22,3 +22,5 @@ dependencies = [
     "pyjwt",
     "sqlalchemy-json",
 ]
+[tool.setuptools]
+packages = ["homecontrol_api"]
