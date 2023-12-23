@@ -10,7 +10,7 @@ cryptography==41.0.7
 fastapi==0.105.0
 greenlet==3.0.3
 h11==0.14.0
-homecontrol-base @ git+https://github.com/2851999/homecontrol-base@b693994652d39f0f7ec08c9af2819d48f075fc84
+homecontrol-base @ git+https://github.com/2851999/homecontrol-base@98752b95193c18bb570acd77f3d385e256eb7bfa
 httpcore==1.0.2
 httptools==0.6.1
 httpx==0.26.0

@@ -22,7 +22,7 @@ async def discover_bridges(
     user: AdminUser, base_service: BaseService
 ) -> list[HueBridgeDiscoverInfo]:
     try:
-        return base_service.hue.discover()
+        return await base_service.hue.discover()
     except hue_exceptions.HueBridgesDiscoveryError as exc:
         raise TooManyRequestsError(
             "Too many requests, try using mDNS for Hue Bridge discovery instead"

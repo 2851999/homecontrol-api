@@ -14,8 +14,8 @@ services:
     build:
       dockerfile: Dockerfile.prod
     working_dir: /homecontrol-api
-    # Doesn't work on Windows - so still cant use mDNS for Hue Bridges
-    # network_mode: "host"
+    # Required for mDNS discovery (Won't work on Windows/WSL)
+    network_mode: "host"
     restart: always
-    ports:
-      - "8000:8000"
+    # ports:
+    #   - "8000:8000"
