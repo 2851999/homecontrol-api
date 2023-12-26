@@ -59,13 +59,14 @@ async def delete_device(
 
 @broadlink.post(path="/{device_id}/record")
 async def record_action(
+    device_id: str,
     action_info: BroadlinkDeviceRecordPost,
     user: AdminUser,
     base_service: BaseService,
 ) -> BroadlinkAction:
     try:
         return base_service.broadlink.record_action(
-            device_id=action_info.device_id, name=action_info.name
+            device_id=device_id, name=action_info.name
         )
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
