@@ -25,6 +25,7 @@ class ControllerAC(BaseModel):
 class ControllerBroadlink(BaseModel):
     control_type: Literal[ControlType.BROADLINK]
     id: StringUUID
+    actions: list[str]
 
 
 class ControllerHueRoom(BaseModel):
