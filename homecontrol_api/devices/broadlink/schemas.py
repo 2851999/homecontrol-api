@@ -14,3 +14,13 @@ class BroadlinkDevice(BaseModel):
 class BroadlinkDevicePost(BaseModel):
     name: str
     ip_address: IPvAnyAddress
+
+
+class BroadlinkAction(BaseModel):
+    id: StringUUID
+    name: str
+
+
+class BroadlinkActionPost(BaseModel):
+    device_id: str
+    name: str

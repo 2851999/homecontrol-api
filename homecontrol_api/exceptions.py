@@ -41,6 +41,12 @@ class DeviceNotFoundError(APIError):
     status_code = status.HTTP_404_NOT_FOUND
 
 
+class ActionNotFoundError(APIError):
+    """Raised when attempting to obtain a Broadlink action but it isn't found"""
+
+    status_code = status.HTTP_404_NOT_FOUND
+
+
 class TooManyRequestsError(APIError):
     """Raised when a request fails due to a rate limit"""
 
