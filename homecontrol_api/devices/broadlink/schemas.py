@@ -21,6 +21,9 @@ class BroadlinkAction(BaseModel):
     name: str
 
 
-class BroadlinkActionPost(BaseModel):
-    device_id: str
+class BroadlinkDeviceRecordPost(BaseModel):
     name: str
+
+
+class BroadlinkDevicePlaybackPost(BaseModel):
+    action_id: str

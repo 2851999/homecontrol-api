@@ -2,8 +2,11 @@ from fastapi import APIRouter, status
 from homecontrol_base import exceptions as base_exceptions
 
 from homecontrol_api.devices.broadlink.schemas import (
+    BroadlinkAction,
     BroadlinkDevice,
+    BroadlinkDevicePlaybackPost,
     BroadlinkDevicePost,
+    BroadlinkDeviceRecordPost,
 )
 from homecontrol_api.exceptions import DeviceNotFoundError
 from homecontrol_api.routers.dependencies import AdminUser, AnyUser, BaseService
@@ -50,5 +53,34 @@ async def delete_device(
 ) -> None:
     try:
         base_service.broadlink.remove_device(device_id)
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc
+
+
+@broadlink.post(path="/{device_id}/record")
+async def record_action(
+    action_info: BroadlinkDeviceRecordPost,
+    user: AdminUser,
+    base_service: BaseService,
+) -> BroadlinkAction:
+    try:
+        return base_service.broadlink.record_action(
+            device_id=action_info.device_id, name=action_info.name
+        )
+    except base_exceptions.DeviceNotFoundError as exc:
+        raise DeviceNotFoundError(str(exc)) from exc
+
+
+@broadlink.post(path="/{device_id}/playback", status_code=status.HTTP_204_NO_CONTENT)
+async def playback_action(
+    device_id: str,
+    playback_info: BroadlinkDevicePlaybackPost,
+    user: AnyUser,
+    base_service: BaseService,
+) -> None:
+    try:
+        base_service.broadlink.play_action(
+            device_id=device_id, action_id=playback_info.action_id
+        )
     except base_exceptions.DeviceNotFoundError as exc:
         raise DeviceNotFoundError(str(exc)) from exc
