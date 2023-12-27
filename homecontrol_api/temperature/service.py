@@ -55,7 +55,7 @@ class TemperatureService(BaseAPIService[HomeControlAPIDatabaseConnection]):
     async def get_room_temperature(self, room_id: str) -> Temperature:
         """Returns the temperature of a Room (based on available AC units)"""
 
-        return self._get_room_temperature(
+        return await self._get_room_temperature(
             room=self._room_service.get_room(room_id=room_id)
         )
 
