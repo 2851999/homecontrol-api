@@ -3,9 +3,10 @@ from typing import Any
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger as APCronTrigger
+from homecontrol_base.database.core import DatabaseConfig
+from sqlalchemy_utils import create_database, database_exists
 
 from homecontrol_api.scheduler.schemas import JobPost, Trigger, TriggerType
-from homecontrol_base.database.core import DatabaseConfig
 
 
 class Scheduler:
@@ -13,6 +14,12 @@ class Scheduler:
 
     def __init__(self):
         database_config = DatabaseConfig()
+
+        # Create database if it doesn't exist in case not using sqlite
+        url = database_config.get_url("apscheduler")
+        if not database_exists(url):
+            create_database(url)
+
         self._scheduler = AsyncIOScheduler(
             jobstores={
                 "default": SQLAlchemyJobStore(
