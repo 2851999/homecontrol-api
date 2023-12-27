@@ -3,9 +3,11 @@ from typing import Optional
 from homecontrol_base.config.database import DatabaseConfig
 from homecontrol_base.database.core import Database, DatabaseConnection
 from sqlalchemy.orm import Session
+from homecontrol_api.database.jobs import JobsDBConnection
 
 from homecontrol_api.database.models import Base
 from homecontrol_api.database.rooms import RoomsDBConnection
+from homecontrol_api.database.temperatures import TemperaturesDBConnection
 from homecontrol_api.database.user_sessions import UserSessionsDBConnection
 from homecontrol_api.database.users import UsersDBConnection
 
@@ -16,6 +18,8 @@ class HomeControlAPIDatabaseConnection(DatabaseConnection):
     _users: Optional[UsersDBConnection] = None
     _user_sessions: Optional[UserSessionsDBConnection] = None
     _rooms: Optional[RoomsDBConnection] = None
+    _temperatures: Optional[TemperaturesDBConnection] = None
+    _jobs: Optional[JobsDBConnection] = None
 
     def __init__(self, session: Session):
         super().__init__(session)
@@ -40,6 +44,20 @@ class HomeControlAPIDatabaseConnection(DatabaseConnection):
         if not self._rooms:
             self._rooms = RoomsDBConnection(self._session)
         return self._rooms
+
+    @property
+    def temperatures(self) -> TemperaturesDBConnection:
+        """Returns a TemperaturesDBConnection while caching it"""
+        if not self._temperatures:
+            self._temperatures = TemperaturesDBConnection(self._session)
+        return self._temperatures
+
+    @property
+    def jobs(self) -> JobsDBConnection:
+        """Returns a JobsDBConnection while caching it"""
+        if not self._jobs:
+            self._jobs = JobsDBConnection(self._session)
+        return self._jobs
 
 
 class HomeControlAPIDatabase(Database[HomeControlAPIDatabaseConnection]):

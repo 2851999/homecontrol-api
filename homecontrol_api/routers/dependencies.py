@@ -30,11 +30,12 @@ BaseService = Annotated[HomeControlBaseService, Depends(get_homecontrol_base_ser
 
 
 async def get_homecontrol_api_service(
+    request: Request,
     base_service: BaseService,
 ) -> HomeControlAPIService:
     """Creates an instance of HomeControlAPIService (for use in FastAPI)"""
     with homecontrol_api_db.connect() as conn:
-        yield HomeControlAPIService(conn, base_service)
+        yield HomeControlAPIService(conn, base_service, request.app.state.scheduler)
 
 
 # APIService from homecontrol-api

@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from homecontrol_base.service.homecontrol_base import HomeControlBaseService
 
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
-from homecontrol_api.rooms.schemas import ControlType
+from homecontrol_api.database.models import TemperatureInDB
+from homecontrol_api.rooms.schemas import ControlType, Room
 from homecontrol_api.rooms.service import RoomService
 from homecontrol_api.service.core import BaseAPIService
 from homecontrol_api.temperature.schemas import Temperature
@@ -31,11 +34,8 @@ class TemperatureService(BaseAPIService[HomeControlAPIDatabaseConnection]):
         ac_state = await ac_device.get_state()
         return Temperature(value=ac_state.outdoor_temperature)
 
-    async def get_room_temperature(self, room_id: str) -> Temperature:
+    async def _get_room_temperature(self, room: Room) -> Temperature:
         """Returns the temperature of a Room (based on available AC units)"""
-
-        # Obtain the room
-        room = self._room_service.get_room(room_id=room_id)
 
         # Find any AC device
         ac_device_id = None
@@ -51,3 +51,40 @@ class TemperatureService(BaseAPIService[HomeControlAPIDatabaseConnection]):
         ac_device = await self.base_service.aircon.get_device(ac_device_id)
         ac_state = await ac_device.get_state()
         return Temperature(value=ac_state.indoor_temperature)
+
+    async def get_room_temperature(self, room_id: str) -> Temperature:
+        """Returns the temperature of a Room (based on available AC units)"""
+
+        return self._get_room_temperature(
+            room=self._room_service.get_room(room_id=room_id)
+        )
+
+    async def record_all_temperatures_to_db(self):
+        """Records all current room temperatures to the database"""
+
+        # Ensure all times are equal (of course it could have a few seconds in-between
+        # but comparison is better this way)
+        current_timestamp = datetime.utcnow()
+
+        outdoor_temp = (await self.get_outdoor_temperature()).value
+
+        if outdoor_temp is not None:
+            self.db_conn.temperatures.create(
+                TemperatureInDB(
+                    timestamp=current_timestamp,
+                    value=outdoor_temp,
+                    room_name="outdoor",
+                )
+            )
+
+        # Now for each room
+        for room in self._room_service.get_rooms():
+            temp = (await self._get_room_temperature(room=room)).value
+            if temp is not None:
+                self.db_conn.temperatures.create(
+                    TemperatureInDB(
+                        timestamp=current_timestamp,
+                        value=temp,
+                        room_name=room.name,
+                    )
+                )

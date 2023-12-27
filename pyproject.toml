@@ -21,6 +21,7 @@ dependencies = [
     "bcrypt",
     "pyjwt",
     "sqlalchemy-json",
+    "APScheduler",
 ]
 [tool.setuptools]
 packages = ["homecontrol_api"]

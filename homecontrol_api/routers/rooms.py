@@ -6,12 +6,12 @@ from homecontrol_api.routers.dependencies import AdminUser, AnyUser, APIService
 rooms = APIRouter(prefix="/rooms", tags=["rooms"])
 
 
-@rooms.get("/")
+@rooms.get("")
 async def get_rooms(user: AnyUser, api_service: APIService) -> list[Room]:
     return api_service.room.get_rooms()
 
 
-@rooms.post("/")
+@rooms.post("")
 async def create_room(
     room_info: RoomPost, user: AdminUser, api_service: APIService
 ) -> Room:

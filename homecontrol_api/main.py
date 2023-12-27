@@ -19,7 +19,9 @@ from homecontrol_api.routers.devices.aircon import aircon
 from homecontrol_api.routers.devices.broadlink import broadlink
 from homecontrol_api.routers.devices.hue import hue
 from homecontrol_api.routers.rooms import rooms
+from homecontrol_api.routers.scheduler import scheduler
 from homecontrol_api.routers.temperature import temperature
+from homecontrol_api.scheduler.core import Scheduler
 from homecontrol_api.service.homecontrol_api import create_homecontrol_api_service
 
 
@@ -46,7 +48,13 @@ async def lifespan(app_instance: FastAPI):
     app_instance.state.hue_manager: HueManager = HueManager()
     app_instance.state.broadlink_manager: BroadlinkManager = BroadlinkManager()
 
+    # Scheduler
+    app_instance.state.scheduler = Scheduler()
+    app_instance.state.scheduler.start()
+
     yield
+
+    app_instance.state.scheduler.stop()
 
 
 app = FastAPI(lifespan=lifespan, version=version("homecontrol_api"))
@@ -66,6 +74,7 @@ app.include_router(broadlink)
 app.include_router(rooms)
 app.include_router(temperature)
 app.include_router(broadlink_actions)
+app.include_router(scheduler)
 
 
 @app.exception_handler(APIError)

@@ -171,6 +171,7 @@ huecert.pem
 # Local databases
 homecontrol_base.db
 homecontrol_api.db
+apscheduler.db
 
 # Production config
 /config_prod

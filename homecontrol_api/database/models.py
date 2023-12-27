@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, LargeBinary, String, Uuid
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, LargeBinary, String, Uuid
 from sqlalchemy.orm import declarative_base
 from sqlalchemy_json import mutable_json_type
 
@@ -36,3 +36,21 @@ class RoomInDB(Base):
     # Could use JSONB here when using just PostgreSQL, but for compatibility
     # use plain JSON for now
     controllers = Column(mutable_json_type(dbtype=JSON, nested=True))
+
+
+class TemperatureInDB(Base):
+    __tablename__ = "temperatures"
+
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    timestamp = Column(DateTime, index=True)
+    value = Column(Float)
+    room_name = Column(String, index=True)
+
+
+class JobInDB(Base):
+    __tablename__ = "jobs"
+
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String)
+    task = Column(String)
+    trigger = Column(mutable_json_type(dbtype=JSON, nested=True))
