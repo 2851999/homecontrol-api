@@ -97,3 +97,11 @@ class ActionService(BaseAPIService[HomeControlAPIDatabaseConnection]):
                     conn.put_scene(
                         task.scene_id, ScenePut(recall=Recall(action="active"))
                     )
+
+    def delete_room_action(self, action_id: str) -> None:
+        """Deletes a room action
+
+        Args:
+            action_id (str): ID of the room action to delete
+        """
+        self.db_conn.room_actions.delete(action_id=action_id)

@@ -28,3 +28,10 @@ async def execute_action(
     action_id: str, user: AnyUser, api_service: APIService
 ) -> None:
     await api_service.action.execute_room_action(action_id=action_id)
+
+
+@room_actions.delete("/{action_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_action(
+    action_id: str, user: AdminUser, api_service: APIService
+) -> None:
+    return api_service.action.delete_room_action(action_id)

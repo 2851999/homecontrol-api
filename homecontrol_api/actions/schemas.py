@@ -24,7 +24,7 @@ class TaskACState(BaseModel):
     state: ACDeviceStatePut
 
 
-class TaskBroadlink(BaseModel):
+class TaskBroadlinkAction(BaseModel):
     task_type: Literal[TaskType.BROADLINK_ACTION]
     device_id: StringUUID
     action_id: StringUUID
@@ -37,7 +37,8 @@ class TaskHueScene(BaseModel):
 
 
 Task = Annotated[
-    Union[TaskACState, TaskBroadlink, TaskHueScene], Field(discriminator="task_type")
+    Union[TaskACState, TaskBroadlinkAction, TaskHueScene],
+    Field(discriminator="task_type"),
 ]
 
 
@@ -57,7 +58,7 @@ class TaskACStatePost(BaseModel):
 
 
 TaskPost = Annotated[
-    Union[TaskACStatePost, TaskBroadlink, TaskHueScene],
+    Union[TaskACStatePost, TaskBroadlinkAction, TaskHueScene],
     Field(discriminator="task_type"),
 ]
 
