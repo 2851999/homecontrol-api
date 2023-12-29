@@ -54,3 +54,13 @@ class JobInDB(Base):
     name = Column(String)
     task = Column(String)
     trigger = Column(mutable_json_type(dbtype=JSON, nested=True))
+
+
+class RoomActionInDB(Base):
+    __tablename__ = "room_actions"
+
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, unique=True)
+    room_id = Column(Uuid(as_uuid=True), index=True)
+    icon = Column(String)
+    tasks = Column(mutable_json_type(dbtype=JSON, nested=True))

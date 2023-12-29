@@ -14,6 +14,7 @@ from homecontrol_base.hue.manager import HueManager
 from homecontrol_api.database.database import database as homecontrol_api_db
 from homecontrol_api.exceptions import APIError
 from homecontrol_api.routers.actions.broadlink import broadlink_actions
+from homecontrol_api.routers.actions.room import room_actions
 from homecontrol_api.routers.auth import auth
 from homecontrol_api.routers.devices.aircon import aircon
 from homecontrol_api.routers.devices.broadlink import broadlink
@@ -75,6 +76,7 @@ app.include_router(rooms)
 app.include_router(temperature)
 app.include_router(broadlink_actions)
 app.include_router(scheduler)
+app.include_router(room_actions)
 
 
 @app.exception_handler(APIError)

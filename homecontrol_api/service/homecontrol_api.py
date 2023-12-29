@@ -5,6 +5,7 @@ from homecontrol_base.service.homecontrol_base import (
     HomeControlBaseService,
     create_homecontrol_base_service,
 )
+from homecontrol_api.actions.service import ActionService
 
 from homecontrol_api.authentication.service import AuthService
 from homecontrol_api.config.api import APIConfig
@@ -26,6 +27,7 @@ class HomeControlAPIService(BaseAPIService[HomeControlAPIDatabaseConnection]):
     _room: Optional[RoomService] = None
     _temperature: Optional[TemperatureService] = None
     _scheduler_service: Optional[SchedulerService] = None
+    _action: Optional[ActionService] = None
 
     def __init__(
         self,
@@ -72,6 +74,13 @@ class HomeControlAPIService(BaseAPIService[HomeControlAPIDatabaseConnection]):
                 self._scheduler = Scheduler()
             self._scheduler_service = SchedulerService(self.db_conn, self._scheduler)
         return self._scheduler_service
+
+    @property
+    def action(self) -> ActionService:
+        """Returns a ActionService while caching it"""
+        if not self._action:
+            self._action = ActionService(self.db_conn, self.base_service)
+        return self._action
 
 
 @contextmanager

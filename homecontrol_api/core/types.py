@@ -12,4 +12,13 @@ def convert_uuid_to_string(id: Union[UUID, str]):
         return id
 
 
+def convert_string_to_uuid(id: Union[UUID, str]):
+    """Converts a string type to UUID"""
+    if isinstance(id, str):
+        return UUID(id)
+    else:
+        return id
+
+
 StringUUID = Annotated[str, BeforeValidator(convert_uuid_to_string)]
+UUIDString = Annotated[UUID, BeforeValidator(convert_string_to_uuid)]
