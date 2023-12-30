@@ -34,7 +34,12 @@ class LoginPost(UserPost):
     long_lived: bool
 
 
-class RefreshPost(BaseModel):
+class InternalUserSession(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: StringUUID
+    user_id: StringUUID
+    access_token: str
     refresh_token: str
 
 
@@ -43,5 +48,3 @@ class UserSession(BaseModel):
 
     id: StringUUID
     user_id: StringUUID
-    access_token: str
-    refresh_token: str

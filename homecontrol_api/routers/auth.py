@@ -1,8 +1,7 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from homecontrol_api.authentication.schemas import (
     LoginPost,
-    RefreshPost,
     User,
     UserAccountType,
     UserPatch,
@@ -15,6 +14,7 @@ from homecontrol_api.routers.dependencies import (
     AnySession,
     AnyUser,
     APIService,
+    RefreshToken,
 )
 
 auth = APIRouter(prefix="/auth", tags=["auth"])
@@ -51,14 +51,18 @@ async def get_users(user: AdminUser, api_service: APIService) -> list[User]:
 
 
 @auth.post("/login", summary="Login as a user")
-async def login(login_data: LoginPost, api_service: APIService) -> UserSession:
-    return api_service.auth.login(login_data)
+async def login(
+    login_info: LoginPost, response: Response, api_service: APIService
+) -> UserSession:
+    return api_service.auth.login(login_info=login_info, response=response)
 
 
 @auth.post("/refresh", summary="Refresh a user session")
-async def refresh(refresh_data: RefreshPost, api_service: APIService) -> UserSession:
+async def refresh(
+    refresh_token: RefreshToken, response: Response, api_service: APIService
+) -> UserSession:
     return api_service.auth.refresh_user_session(
-        refresh_token=refresh_data.refresh_token
+        refresh_token=refresh_token, response=response
     )
 
 
@@ -67,5 +71,7 @@ async def refresh(refresh_data: RefreshPost, api_service: APIService) -> UserSes
     summary="Logout and invalidate the user session",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def logout(current_session: AnySession, api_service: APIService) -> None:
-    api_service.auth.logout(current_session.id)
+async def logout(
+    current_session: AnySession, response: Response, api_service: APIService
+) -> None:
+    api_service.auth.logout(user_session_id=current_session.id, response=response)

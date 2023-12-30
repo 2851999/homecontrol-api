@@ -3,6 +3,9 @@
         "jwt_key": "some_secret_string",
         "access_token_expiry": 300,
         "refresh_token_expiry": 3600,
-        "long_lived_refresh_token_expiry": 604800
+        "long_lived_refresh_token_expiry": 604800,
+        "cors_allow_origins": [
+            "http://localhost:3000"
+        ]
     }
 }
