@@ -86,3 +86,13 @@ async def api_error_handler(request: Request, exc: APIError):
     return await http_exception_handler(
         request, HTTPException(status_code=exc.status_code, detail=str(exc))
     )
+
+
+@app.get("/info")
+async def get_info() -> dict:
+    return {
+        "version": {
+            "homecontrol_base": version("homecontrol-base"),
+            "homecontrol_api": version("homecontrol-api"),
+        }
+    }
