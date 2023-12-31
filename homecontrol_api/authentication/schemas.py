@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -34,8 +35,15 @@ class LoginPost(UserPost):
     long_lived: bool
 
 
-class RefreshPost(BaseModel):
+class InternalUserSession(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: StringUUID
+    user_id: StringUUID
+    access_token: str
     refresh_token: str
+    long_lived: bool
+    expiry_time: datetime
 
 
 class UserSession(BaseModel):
@@ -43,5 +51,3 @@ class UserSession(BaseModel):
 
     id: StringUUID
     user_id: StringUUID
-    access_token: str
-    refresh_token: str

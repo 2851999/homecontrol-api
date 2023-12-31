@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, Header, Request
+from fastapi import Cookie, Depends, Header, Request
 from homecontrol_base.service.homecontrol_base import (
     HomeControlBaseService,
     create_homecontrol_base_service,
@@ -45,15 +45,25 @@ APIService = Annotated[HomeControlAPIService, Depends(get_homecontrol_api_servic
 # --------------------- DEPENDENCIES FOR AUTHENTICATION ---------------------
 
 
-async def get_token_from_header(authorization: Annotated[str, Header()]):
-    """Returns bearer access token obtained from the request header"""
-    auth = authorization.split(" ")
+async def get_access_token_from_header(access_token: Annotated[str, Cookie()] = None):
+    """Returns access token obtained from the request header"""
+    if access_token is None:
+        raise AuthenticationError("No access token supplied")
+    auth = access_token.split(" ")
     if auth[0].lower() != "bearer" or len(auth) != 2:
         raise AuthenticationError("Invalid bearer token provided")
     return auth[1]
 
 
-AccessToken = Annotated[str, Depends(get_token_from_header)]
+async def get_refresh_token_from_header(refresh_token: Annotated[str, Cookie()] = None):
+    """Returns refresh token obtained from the request header"""
+    if refresh_token is None:
+        raise AuthenticationError("No refresh token supplied")
+    return refresh_token
+
+
+AccessToken = Annotated[str, Depends(get_access_token_from_header)]
+RefreshToken = Annotated[str, Depends(get_refresh_token_from_header)]
 
 
 async def verify_current_user_session(

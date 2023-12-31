@@ -10,6 +10,7 @@ from homecontrol_base.database.homecontrol_base.database import (
     database as homecontrol_base_db,
 )
 from homecontrol_base.hue.manager import HueManager
+from homecontrol_api.config.api import APIConfig
 
 from homecontrol_api.database.database import database as homecontrol_api_db
 from homecontrol_api.exceptions import APIError
@@ -58,11 +59,13 @@ async def lifespan(app_instance: FastAPI):
     app_instance.state.scheduler.stop()
 
 
+api_config = APIConfig()
+
 app = FastAPI(lifespan=lifespan, version=version("homecontrol_api"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=api_config.security.cors_allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

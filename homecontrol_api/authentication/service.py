@@ -1,5 +1,6 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
+from fastapi import Response
 
 from homecontrol_base.exceptions import (
     DatabaseDuplicateEntryFoundError,
@@ -8,6 +9,7 @@ from homecontrol_base.exceptions import (
 from homecontrol_base.service.core import BaseService
 
 from homecontrol_api.authentication.schemas import (
+    InternalUserSession,
     LoginPost,
     User,
     UserAccountType,
@@ -145,7 +147,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             seconds_to_expiry=self._get_refresh_expiry_seconds(long_lived),
         )
 
-    def _create_user_session(self, user: User, long_lived: bool) -> UserSession:
+    def _create_user_session(self, user: User, long_lived: bool) -> InternalUserSession:
         """Creates a session for a given User (assumes authentication already done)
 
         Args:
@@ -171,13 +173,40 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         )
         # Save in the db
         user_session = self.db_conn.user_sessions.create(user_session)
-        return UserSession.model_validate(user_session)
+        return InternalUserSession.model_validate(user_session)
 
-    def login(self, login_info: LoginPost) -> UserSession:
+    def _assign_session_tokens(
+        self, internal_user_session: InternalUserSession, response: Response
+    ):
+        """Assigns the access and refresh tokens to the cookies in the response
+
+        Args:
+            internal_user_session (InternalUserSession): User session with the tokens to use
+            response (Response): FastAPI response (for setting cookies)
+        """
+        # Stored time doesn't have timezone, so add UTC here as required for cookie
+        session_expire_time_utc = internal_user_session.expiry_time.replace(
+            tzinfo=timezone.utc
+        )
+        response.set_cookie(
+            key="access_token",
+            value=f"Bearer {internal_user_session.access_token}",
+            expires=session_expire_time_utc,
+            httponly=True,
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=internal_user_session.refresh_token,
+            expires=session_expire_time_utc,
+            httponly=True,
+        )
+
+    def login(self, login_info: LoginPost, response: Response) -> UserSession:
         """Logs in as a given user using a username and password
 
         Args:
             login_info (LoginPost): User login information
+            response (Response): FastAPI response (for setting cookies)
 
         Returns:
             UserSession: New session fot the user to use
@@ -200,13 +229,16 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             raise AuthenticationError("Account is disabled. Please contact an admin.")
 
         # If got here, can create a new session
-        return self._create_user_session(
+        internal_user_session = self._create_user_session(
             user,
             # Don't allow admins to have long sessions
             long_lived=login_info.long_lived
             if user.account_type != UserAccountType.ADMIN
             else False,
         )
+        self._assign_session_tokens(internal_user_session, response)
+
+        return UserSession.model_validate(internal_user_session)
 
     def authenticate_user_session(self, access_token: str) -> UserSession:
         """Authenticate a user session using an access token
@@ -261,7 +293,9 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             raise AuthenticationError("User is disabled")
         return user
 
-    def refresh_user_session(self, refresh_token: str) -> UserSession:
+    def refresh_user_session(
+        self, refresh_token: str, response: Response
+    ) -> UserSession:
         """Refresh a user session given a refresh token
 
         Will validate the refresh token and then use it to refresh the
@@ -269,6 +303,7 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
 
         Args:
             refresh_token (str): Refresh token of the user
+            response (Response): FastAPI response (for setting cookies)
 
         Returns:
             UserSession: Updated session for the user to use
@@ -302,17 +337,24 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
         )
         self.db_conn.user_sessions.update(user_session)
 
-        return UserSession.model_validate(user_session)
+        internal_user_session = InternalUserSession.model_validate(user_session)
+        self._assign_session_tokens(internal_user_session, response)
 
-    def logout(self, user_session_id: str) -> None:
+        return UserSession.model_validate(internal_user_session)
+
+    def logout(self, user_session_id: str, response: Response) -> None:
         """Invalidate a user session
 
         Args:
             user_session_id (str): ID of the user session to invalidate
+            response (Response): FastAPI response (for removing cookies)
         """
 
         # Delete the session
         self.db_conn.user_sessions.delete(user_session_id=user_session_id)
+
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
 
     def delete_all_expired_sessions(self) -> None:
         """Delete all expired sessions from the database"""

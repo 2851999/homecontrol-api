@@ -10,6 +10,7 @@ class APIConfigSecurityData:
     access_token_expiry: int
     refresh_token_expiry: int
     long_lived_refresh_token_expiry: int
+    cors_allow_origins: list[str]
 
 
 @dataclass
