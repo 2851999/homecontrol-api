@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import Response
 
 from homecontrol_base.exceptions import (
@@ -184,14 +184,20 @@ class AuthService(BaseService[HomeControlAPIDatabaseConnection]):
             internal_user_session (InternalUserSession): User session with the tokens to use
             response (Response): FastAPI response (for setting cookies)
         """
+        # Stored time doesn't have timezone, so add UTC here as required for cookie
+        session_expire_time_utc = internal_user_session.expiry_time.replace(
+            tzinfo=timezone.utc
+        )
         response.set_cookie(
             key="access_token",
             value=f"Bearer {internal_user_session.access_token}",
+            expires=session_expire_time_utc,
             httponly=True,
         )
         response.set_cookie(
             key="refresh_token",
             value=internal_user_session.refresh_token,
+            expires=session_expire_time_utc,
             httponly=True,
         )
 

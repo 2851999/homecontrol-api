@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -41,6 +42,8 @@ class InternalUserSession(BaseModel):
     user_id: StringUUID
     access_token: str
     refresh_token: str
+    long_lived: bool
+    expiry_time: datetime
 
 
 class UserSession(BaseModel):
