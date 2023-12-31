@@ -54,6 +54,7 @@ class JobInDB(Base):
     name = Column(String)
     task = Column(String)
     trigger = Column(mutable_json_type(dbtype=JSON, nested=True))
+    status = Column(String)
 
 
 class RoomActionInDB(Base):
