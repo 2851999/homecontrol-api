@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -59,6 +59,25 @@ class Scheduler:
         self._scheduler.add_job(
             func=task_function, id=job_id, **self._get_trigger_args(job_info.trigger)
         )
+
+    def pause_job(self, job_id: str):
+        self._scheduler.pause_job(job_id=job_id)
+
+    def resume_job(self, job_id: str):
+        self._scheduler.resume_job(job_id=job_id)
+
+    def modify_job(
+        self,
+        job_id: str,
+        new_task_function: Optional[Any] = None,
+        new_trigger: Optional[Trigger] = None,
+    ):
+        modify_args = {}
+        if new_task_function:
+            modify_args["func"] = new_task_function
+        if new_trigger:
+            modify_args = {**modify_args, **self._get_trigger_args(new_trigger)}
+        self._scheduler.modify_job(job_id=job_id, **modify_args)
 
     def remove_job(self, job_id: str):
         """Remove a job from the scheduler"""

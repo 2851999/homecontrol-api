@@ -1,4 +1,9 @@
 -------------------------------------------------------------
+Next version
+
+- Add route to edit a scheduled job
+
+-------------------------------------------------------------
 v0.1.1
 
 - Use HttpOnly cookies for access & refresh token storage
