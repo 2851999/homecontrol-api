@@ -1,5 +1,5 @@
 -------------------------------------------------------------
-Next version
+v0.2.0
 
 - Add route to edit a scheduled job
 - Fix bug: Temperatures returned could be in the wrong order
