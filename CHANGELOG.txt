@@ -2,6 +2,7 @@
 Next version
 
 - Add route to edit a scheduled job
+- Fix bug: Temperatures returned could be in the wrong order
 
 -------------------------------------------------------------
 v0.1.1

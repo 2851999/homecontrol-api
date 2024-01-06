@@ -40,6 +40,15 @@ class TemperaturesDBConnection(DatabaseConnection):
             filters.append(TemperatureInDB.timestamp < end_timestamp)
 
         if len(filters) == 0:
-            return self._session.query(TemperatureInDB).all()
+            return (
+                self._session.query(TemperatureInDB)
+                .order_by(TemperatureInDB.timestamp)
+                .all()
+            )
         else:
-            return self._session.query(TemperatureInDB).filter(*filters).all()
+            return (
+                self._session.query(TemperatureInDB)
+                .order_by(TemperatureInDB.timestamp)
+                .filter(*filters)
+                .all()
+            )
