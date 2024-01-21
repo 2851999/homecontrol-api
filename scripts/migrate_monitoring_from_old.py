@@ -15,13 +15,13 @@ from homecontrol_api.database.models import TemperatureInDB
 ROOM_NAMES = [
     ("Games_Room", "Games Room"),
     ("Joel_s_Room", "Joel's Room"),
-    ("Spare Room", "Spare Room"),
+    ("Spare_Room", "Spare Room"),
     ("Mum_s_Room", "Mum's Room"),
     ("outdoor", "outdoor"),
 ]
 
 # Old data path
-OLD_DATA_PATH = "test-old-temps/"
+OLD_DATA_PATH = "old-temps/"
 
 
 class OldDatabaseConnection:
@@ -69,20 +69,34 @@ class OldDatabaseConnection:
         self._conn.commit()
 
 
-# Go through each room
-for room_names in ROOM_NAMES:
-    # Fetch all old data
-    data = []
-    with OldDatabaseConnection(f"{OLD_DATA_PATH}homecontrol.db") as old_conn:
-        data = old_conn.select_values(f"{room_names[0]}_temps", ["timestamp", "temp"])
+def migrate():
+    print("Migrating data...")
+    # Go through each room
+    for room_names in ROOM_NAMES:
+        print(f"Room: {room_names[1]}")
 
-    # Now need to insert into new database
-    with new_database.connect() as new_conn:
-        for singleTempData in data:
-            new_conn.temperatures.create(
-                TemperatureInDB(
-                    timestamp=datetime.strptime(singleTempData[0], "%Y-%m-%d %H:%M:%S"),
-                    value=singleTempData[1],
-                    room_name=room_names[1],
-                )
+        # Fetch all old data
+        data = []
+        with OldDatabaseConnection(f"{OLD_DATA_PATH}homecontrol.db") as old_conn:
+            print("Fetching data...")
+            data = old_conn.select_values(
+                f"{room_names[0]}_temps", ["timestamp", "temp"]
             )
+
+        # Now need to insert into new database
+        with new_database.connect() as new_conn:
+            print("Populating new database...")
+            for singleTempData in data:
+                new_conn.temperatures.create(
+                    TemperatureInDB(
+                        timestamp=datetime.strptime(
+                            singleTempData[0], "%Y-%m-%d %H:%M:%S"
+                        ),
+                        value=singleTempData[1],
+                        room_name=room_names[1],
+                    )
+                )
+
+
+if __name__ == "__main__":
+    migrate()
