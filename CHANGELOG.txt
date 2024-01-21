@@ -1,6 +1,7 @@
 -------------------------------------------------------------
 Next version
 
+- Added migrate_monitoring_from_old script
 - Upgrade packages
 
 -------------------------------------------------------------
