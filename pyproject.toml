@@ -15,7 +15,7 @@ classifiers = [
 ]
 requires-python = ">=3.9.5"
 dependencies = [
-    "homecontrol-base@git+https://github.com/2851999/homecontrol-base@d1b571917126bf2e138fe3cfb8ee66c962bcec52",
+    "homecontrol-base@git+https://github.com/2851999/homecontrol-base@0537e08d72b61011bf2e002ed97b425c78a2c70b",
     "fastapi",
     "uvicorn[standard]",
     "bcrypt",
