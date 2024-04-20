@@ -15,7 +15,6 @@ class UserInDB(Base):
     hashed_password = Column(LargeBinary)
     account_type = Column(String)
     enabled = Column(Boolean)
-    test = Column(String)
 
 
 class UserSessionInDB(Base):
