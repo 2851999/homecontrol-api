@@ -3,8 +3,8 @@ from typing import Optional
 from homecontrol_base.config.database import DatabaseConfig
 from homecontrol_base.database.core import Database, DatabaseConnection
 from sqlalchemy.orm import Session
-from homecontrol_api.database.jobs import JobsDBConnection
 
+from homecontrol_api.database.jobs import JobsDBConnection
 from homecontrol_api.database.models import Base
 from homecontrol_api.database.room_actions import RoomActionsDBConnection
 from homecontrol_api.database.rooms import RoomsDBConnection

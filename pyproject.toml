@@ -15,7 +15,7 @@ classifiers = [
 ]
 requires-python = ">=3.9.5"
 dependencies = [
-    "homecontrol-base@git+https://github.com/2851999/homecontrol-base@v0.1.1",
+    "homecontrol-base@git+https://github.com/2851999/homecontrol-base@ff7f499559bdf5a5f7bbea12b9b60c151d00613b",
     "fastapi",
     "uvicorn[standard]",
     "bcrypt",
@@ -23,5 +23,12 @@ dependencies = [
     "sqlalchemy-json",
     "APScheduler",
 ]
+
+[project.scripts]
+homecontrol-api-alembic = "homecontrol_api.migrations:main"
+
 [tool.setuptools]
 packages = ["homecontrol_api"]
+
+[tool.setuptools.package-data]
+homecontrol_base = ["migrations/*"]
