@@ -1,13 +1,11 @@
-import os
 import sys
+from pathlib import Path
 
 import alembic.config
 
-here = os.path.dirname(os.path.abspath(__file__))
-
 alembic_args = [
     "-c",
-    os.path.join(here, "alembic.ini"),
+    str(Path(__file__).parent / "alembic.ini"),
     *sys.argv[1:],
 ]
 

@@ -32,10 +32,6 @@ async def lifespan(app_instance: FastAPI):
     """Used to setup the database, delete expired sessions and initialise
     devices when starting"""
 
-    # Ensure all tables in database are created
-    homecontrol_base_db.create_tables()
-    homecontrol_api_db.create_tables()
-
     # Delete any expired user sessions
     with create_homecontrol_api_service() as service:
         service.auth.delete_all_expired_sessions()
