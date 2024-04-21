@@ -3,8 +3,9 @@ from typing import Optional
 from homecontrol_base.config.database import DatabaseConfig
 from homecontrol_base.database.core import Database, DatabaseConnection
 from sqlalchemy.orm import Session
-from homecontrol_api.database.jobs import JobsDBConnection
 
+from homecontrol_api import migrations
+from homecontrol_api.database.jobs import JobsDBConnection
 from homecontrol_api.database.models import Base
 from homecontrol_api.database.room_actions import RoomActionsDBConnection
 from homecontrol_api.database.rooms import RoomsDBConnection
@@ -74,7 +75,10 @@ class HomeControlAPIDatabase(Database[HomeControlAPIDatabaseConnection]):
 
     def __init__(self, config: DatabaseConfig) -> None:
         super().__init__(
-            "homecontrol_api", Base, HomeControlAPIDatabaseConnection, config
+            "homecontrol_api",
+            Base,
+            HomeControlAPIDatabaseConnection,
+            config,
         )
 
 
