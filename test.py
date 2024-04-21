@@ -14,8 +14,8 @@ from homecontrol_api.rooms.schemas import Room, RoomController, RoomPost
 from homecontrol_api.routers.dependencies import get_homecontrol_base_service
 from homecontrol_api.service.homecontrol_api import create_homecontrol_api_service
 
-homecontrol_base_db.create_tables()
-homecontrol_api_db.create_tables()
+# homecontrol_base_db.create_tables()
+# homecontrol_api_db.create_tables()
 
 # with create_homecontrol_api_service() as service:
 #     # user = service.auth.create_user(UserPost(username="Me", password="test"))
