@@ -1,18 +1,16 @@
 from contextlib import asynccontextmanager
 from importlib.metadata import version
+import logging
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from homecontrol_base.aircon.manager import ACManager
 from homecontrol_base.broadlink.manager import BroadlinkManager
-from homecontrol_base.database.homecontrol_base.database import (
-    database as homecontrol_base_db,
-)
 from homecontrol_base.hue.manager import HueManager
-from homecontrol_api.config.api import APIConfig
+import uvicorn
 
-from homecontrol_api.database.database import database as homecontrol_api_db
+from homecontrol_api.config.api import APIConfig
 from homecontrol_api.exceptions import APIError
 from homecontrol_api.routers.actions.broadlink import broadlink_actions
 from homecontrol_api.routers.actions.room import room_actions

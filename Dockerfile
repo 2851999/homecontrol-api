@@ -19,4 +19,4 @@ COPY docker_entrypoint.sh /homecontrol-api
 RUN ["chmod", "+x", "/homecontrol-api/docker_entrypoint.sh"]
 
 ENTRYPOINT [ "/homecontrol-api/docker_entrypoint.sh" ]
-CMD ["uvicorn", "homecontrol_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "homecontrol_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-config", "logging.ini"]
