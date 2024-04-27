@@ -2,6 +2,7 @@
 Next version
 
 - Add logging.ini for changing logging config
+- Fix docker-compose-prod.yml using uvicorn --reload
 
 -------------------------------------------------------------
 v0.3.0
