@@ -164,6 +164,7 @@ midea.json
 database.json
 hue.json
 api.json
+logging.ini
 
 # Local hue cert
 huecert.pem
