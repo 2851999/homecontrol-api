@@ -16,9 +16,6 @@ COPY ./homecontrol_api /homecontrol-api/homecontrol_api
 COPY pyproject.toml /homecontrol-api/
 RUN pip install .
 
-COPY ./config_prod/* /homecontrol-api
-COPY huecert.pem /homecontrol-api
-
 COPY docker_entrypoint.sh /homecontrol-api
 RUN ["chmod", "+x", "/homecontrol-api/docker_entrypoint.sh"]
 
