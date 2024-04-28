@@ -55,7 +55,11 @@ async def lifespan(app_instance: FastAPI):
 
 api_config = APIConfig()
 
-app = FastAPI(lifespan=lifespan, version=version("homecontrol_api"))
+app = FastAPI(
+    lifespan=lifespan,
+    version=version("homecontrol_api"),
+    root_path=api_config.root_path,
+)
 
 app.add_middleware(
     CORSMiddleware,
