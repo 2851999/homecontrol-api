@@ -2,6 +2,7 @@
 Next version
 
 - Add logging.ini for changing logging config
+- Allow root_path to be modified in api.json
 - Remove config from Dockerfile.prod
 - Fix Dockerfile.prod using uvicorn --reload
 
