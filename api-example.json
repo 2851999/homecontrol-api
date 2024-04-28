@@ -1,4 +1,5 @@
 {
+    "root_path": "",
     "security": {
         "jwt_key": "some_secret_string",
         "access_token_expiry": 300,

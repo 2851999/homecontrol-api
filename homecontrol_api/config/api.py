@@ -17,6 +17,7 @@ class APIConfigSecurityData:
 class APIConfigData:
     """API config for homecontrol-api"""
 
+    root_path: str
     security: APIConfigSecurityData
 
 
@@ -25,6 +26,10 @@ class APIConfig(BaseConfig[APIConfigData]):
 
     def __init__(self) -> None:
         super().__init__("api.json", APIConfigData)
+
+    @property
+    def root_path(self) -> str:
+        return self._data.root_path
 
     @property
     def security(self) -> APIConfigSecurityData:
