@@ -1,5 +1,5 @@
 -------------------------------------------------------------
-Next version
+v0.4.0
 
 - Add logging.ini for changing logging config
 - Allow root_path to be modified in api.json
