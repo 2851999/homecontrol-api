@@ -5,6 +5,7 @@ Next version
 - Allow root_path to be modified in api.json
 - Remove config from Dockerfile.prod
 - Fix Dockerfile.prod using uvicorn --reload
+- Upgrade packages
 
 -------------------------------------------------------------
 v0.3.0
