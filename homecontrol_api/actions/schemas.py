@@ -55,6 +55,7 @@ class RoomAction(BaseModel):
 class TaskACStatePost(BaseModel):
     task_type: Literal[TaskType.AC_STATE]
     device_id: StringUUID
+    state: ACDeviceStatePut
 
 
 TaskPost = Annotated[

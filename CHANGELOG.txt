@@ -1,4 +1,10 @@
 -------------------------------------------------------------
+Next version
+
+- Modify /actions/room to take in ACDeviceStatePut for
+  AC_STATE tasks
+
+-------------------------------------------------------------
 v0.4.0
 
 - Add logging.ini for changing logging config

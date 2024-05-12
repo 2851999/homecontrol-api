@@ -1,8 +1,6 @@
-from homecontrol_base.aircon.state import ACDeviceState
 from homecontrol_base.exceptions import DatabaseDuplicateEntryFoundError
 from homecontrol_base.hue.api.schema import Recall, ScenePut
 from homecontrol_base.service.homecontrol_base import HomeControlBaseService
-from pydantic import RootModel
 
 from homecontrol_api.actions.schemas import RoomAction, RoomActionPost, TaskType
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
@@ -34,25 +32,8 @@ class ActionService(BaseAPIService[HomeControlAPIDatabaseConnection]):
             NameAlreadyExistsError: If a room action with the same name already exists
         """
 
-        tasks_data = []
-
-        # Go through each task (need to manually get AC states)
-        for task in action_info.tasks:
-            # Append the data (and include the AC state if needed)
-            task_data = task.model_dump()
-
-            if task.task_type == TaskType.AC_STATE:
-                # Obtain the current state
-                ac_device = await self.base_service.aircon.get_device(task.device_id)
-                current_ac_state = await ac_device.get_state()
-                task_data = {
-                    **task_data,
-                    "state": RootModel[ACDeviceState](current_ac_state).model_dump(),
-                }
-            tasks_data.append(task_data)
-
         # Create the database model
-        action = RoomActionInDB(**{**action_info.model_dump(), "tasks": tasks_data})
+        action = RoomActionInDB(**action_info.model_dump())
 
         # Add to the database
         try:
