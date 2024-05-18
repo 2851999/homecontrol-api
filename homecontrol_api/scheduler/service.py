@@ -88,11 +88,9 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
             update_trigger: bool = job_data.trigger is not None
 
             if update_trigger:
-                new_trigger = None
-                if update_trigger:
-                    new_trigger = job_data.trigger
+                new_trigger = job_data.trigger
 
-                self._scheduler.modify_job(
+                self._scheduler.reschedule_job(
                     job_id=job_id,
                     new_trigger=new_trigger,
                 )

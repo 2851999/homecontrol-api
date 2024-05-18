@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Optional
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -7,6 +8,9 @@ from homecontrol_base.database.core import DatabaseConfig
 from sqlalchemy_utils import create_database, database_exists
 
 from homecontrol_api.scheduler.schemas import JobPost, Trigger, TriggerType
+
+
+logger = logging.getLogger()
 
 
 class Scheduler:
@@ -69,7 +73,7 @@ class Scheduler:
     def resume_job(self, job_id: str):
         self._scheduler.resume_job(job_id=job_id)
 
-    def modify_job(
+    def reschedule_job(
         self,
         job_id: str,
         new_trigger: Optional[Trigger] = None,
@@ -77,7 +81,7 @@ class Scheduler:
         modify_args = {}
         if new_trigger:
             modify_args = {**modify_args, **self._get_trigger_args(new_trigger)}
-        self._scheduler.modify_job(job_id=job_id, **modify_args)
+        self._scheduler.reschedule_job(job_id=job_id, **modify_args)
 
     def has_job(self, job_id: str):
         return self._scheduler.get_job(job_id) is not None

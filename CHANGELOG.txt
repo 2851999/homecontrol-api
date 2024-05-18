@@ -7,6 +7,8 @@ Next version
 - Removed /scheduler/available_tasks endpoint
 - Fixed issue preventing creation of jobs with a datetime
   trigger
+- Fixed issue preventing job triggers from running when
+  moved to an earlier time
 
 -------------------------------------------------------------
 v0.4.0
