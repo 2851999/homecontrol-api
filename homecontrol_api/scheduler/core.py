@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Optional
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -8,9 +7,6 @@ from homecontrol_base.database.core import DatabaseConfig
 from sqlalchemy_utils import create_database, database_exists
 
 from homecontrol_api.scheduler.schemas import JobPost, Trigger, TriggerType
-
-
-logger = logging.getLogger()
 
 
 class Scheduler:
