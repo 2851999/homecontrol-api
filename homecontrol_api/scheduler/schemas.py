@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
 from homecontrol_api.core.types import StringUUID
 
@@ -21,6 +21,10 @@ class TriggerType(StrEnum):
 class TriggerDatetime(BaseModel):
     trigger_type: Literal[TriggerType.DATETIME] = TriggerType.DATETIME
     value: datetime
+
+    @field_serializer("value")
+    def serialise_value(self, value: datetime):
+        return str(value)
 
 
 class TimeDelta(BaseModel):

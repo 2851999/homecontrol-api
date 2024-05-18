@@ -79,6 +79,10 @@ class Scheduler:
             modify_args = {**modify_args, **self._get_trigger_args(new_trigger)}
         self._scheduler.modify_job(job_id=job_id, **modify_args)
 
+    def has_job(self, job_id: str):
+        return self._scheduler.get_job(job_id) is not None
+
     def remove_job(self, job_id: str):
         """Remove a job from the scheduler"""
+
         self._scheduler.remove_job(job_id)

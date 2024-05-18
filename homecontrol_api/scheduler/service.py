@@ -1,4 +1,6 @@
 import uuid
+
+from apscheduler.jobstores.base import JobLookupError
 from homecontrol_base.service.core import BaseService
 from pydantic import TypeAdapter
 
@@ -68,30 +70,39 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
         # Obtain the Job
         job = self.db_conn.jobs.get(job_id)
 
+        # Assign the new data
+        update_data = job_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(job, key, value)
+
+        if not self._scheduler.has_job(job_id):
+            # Need to create the job, presumably this state has occurred because a datetime
+            # trigger has been used and is in the past, so APScheduler has removed it
+            self._scheduler.add_job(
+                job_id=job_id,
+                job_info=JobPost(**Job.model_validate(job).model_dump()),
+                task_function=task_handler,
+            )
+        else:
+            # Check if task itself changing
+            update_trigger: bool = job_data.trigger is not None
+
+            if update_trigger:
+                new_trigger = None
+                if update_trigger:
+                    new_trigger = job_data.trigger
+
+                self._scheduler.modify_job(
+                    job_id=job_id,
+                    new_trigger=new_trigger,
+                )
+
         # Check if status changing and update the job in the scheduler if necessary
         if job_data.status is not None and job_data.status != job.status:
             if job_data.status == JobStatus.ACTIVE:
                 self._scheduler.resume_job(job_id=job_id)
             elif job_data.status == JobStatus.PAUSED:
                 self._scheduler.pause_job(job_id=job_id)
-
-        # Check if task itself changing
-        update_trigger: bool = job_data.trigger is not None
-
-        if update_trigger:
-            new_trigger = None
-            if update_trigger:
-                new_trigger = job_data.trigger
-
-            self._scheduler.modify_job(
-                job_id=job_id,
-                new_trigger=new_trigger,
-            )
-
-        # Assign the new data
-        update_data = job_data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(job, key, value)
 
         # Update and return the updated data
         self.db_conn.jobs.update(job)
@@ -104,5 +115,10 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
             job_id (str): ID of the Job to delete
         """
 
-        self._scheduler.remove_job(job_id)
+        # Ignore errors from APScheduler not finding the job e.g. a job with a
+        # datetime in the past will be removed automatically
+        try:
+            self._scheduler.remove_job(job_id)
+        except JobLookupError:
+            pass
         self.db_conn.jobs.delete(job_id)
