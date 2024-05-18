@@ -4,10 +4,9 @@ from pydantic import TypeAdapter
 
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.models import JobInDB
-from homecontrol_api.exceptions import TaskNotFoundError
 from homecontrol_api.scheduler.core import Scheduler
 from homecontrol_api.scheduler.schemas import Job, JobPatch, JobPost, JobStatus
-from homecontrol_api.scheduler.tasks import AVAILABLE_TASKS
+from homecontrol_api.scheduler.tasks import task_handler
 
 
 class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
@@ -30,15 +29,7 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
 
         Returns:
             Job: Created job
-
-        Raises:
-            TaskNotFoundError: If the given task doesn't exist
         """
-
-        # Attempt to get the task function (and ensure it exists)
-        task_function = AVAILABLE_TASKS.get(job_info.task)
-        if task_function is None:
-            raise TaskNotFoundError(f"Task '{job_info.task}' was not found")
 
         # Create the database model (and ensure id is created before adding)
         job = JobInDB(**job_info.model_dump(), id=uuid.uuid4(), status=JobStatus.ACTIVE)
@@ -47,7 +38,7 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
         self._scheduler.add_job(
             job_id=str(job.id),
             job_info=job_info,
-            task_function=task_function,
+            task_function=task_handler,
         )
 
         # Add to the database (only once successfully added to APScheduler)
@@ -85,22 +76,15 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
                 self._scheduler.pause_job(job_id=job_id)
 
         # Check if task itself changing
-        update_task: bool = job_data.task is not None and job_data.task != job.task
         update_trigger: bool = job_data.trigger is not None
 
-        if update_task or update_trigger:
-            new_task_function = None
+        if update_trigger:
             new_trigger = None
-            if update_task:
-                task_function = AVAILABLE_TASKS.get(job_data.task)
-                if task_function is None:
-                    raise TaskNotFoundError(f"Task '{job_data.task}' was not found")
             if update_trigger:
                 new_trigger = job_data.trigger
 
             self._scheduler.modify_job(
                 job_id=job_id,
-                new_task_function=new_task_function,
                 new_trigger=new_trigger,
             )
 

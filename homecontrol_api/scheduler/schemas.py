@@ -47,6 +47,31 @@ Trigger = Annotated[
 ]
 
 
+class TaskType(StrEnum):
+    """Enum of available task types"""
+
+    RECORD_ALL_TEMPERATURES = "record_all_temperature"
+    EXECUTE_ROOM_ACTION = "execute_room_action"
+
+
+class TaskRecordAllTemperatures(BaseModel):
+    task_type: Literal[TaskType.RECORD_ALL_TEMPERATURES] = (
+        TaskType.RECORD_ALL_TEMPERATURES
+    )
+
+
+class TaskExecuteRoomAction(BaseModel):
+    task_type: Literal[TaskType.EXECUTE_ROOM_ACTION] = TaskType.EXECUTE_ROOM_ACTION
+    room_id: str
+    action_id: str
+
+
+Task = Annotated[
+    Union[TaskRecordAllTemperatures, TaskExecuteRoomAction],
+    Field(discriminator="task_type"),
+]
+
+
 class JobStatus(StrEnum):
     """Enum of possible job status'"""
 
@@ -59,22 +84,22 @@ class Job(BaseModel):
 
     id: StringUUID
     name: str
-    task: str
+    task: Task
     trigger: Trigger
     status: JobStatus
 
 
 class JobPost(BaseModel):
     name: str
-    task: str
+    task: Task
     trigger: Trigger
 
 
 class JobPatch(BaseModel):
     name: Optional[str] = None
-    task: Optional[str] = None
 
     # TODO: For now all or nothing for simplicity
+    task: Optional[Task] = None
     trigger: Optional[Trigger] = None
 
     status: Optional[JobStatus] = None

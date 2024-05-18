@@ -1,8 +1,10 @@
 -------------------------------------------------------------
 Next version
 
-- Modify /actions/room to take in ACDeviceStatePut for
+- Added ability to schedule room actions
+- Modified /actions/room to take in ACDeviceStatePut for
   AC_STATE tasks
+- Removed /scheduler/available_tasks endpoint
 
 -------------------------------------------------------------
 v0.4.0

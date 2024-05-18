@@ -51,9 +51,3 @@ class TooManyRequestsError(APIError):
     """Raised when a request fails due to a rate limit"""
 
     status_code = status.HTTP_429_TOO_MANY_REQUESTS
-
-
-class TaskNotFoundError(APIError):
-    """Raised when a job with a given name isn't found"""
-
-    status_code = status.HTTP_404_NOT_FOUND
