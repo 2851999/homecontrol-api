@@ -2,14 +2,8 @@ from fastapi import APIRouter, status
 
 from homecontrol_api.routers.dependencies import AdminUser, APIService
 from homecontrol_api.scheduler.schemas import Job, JobPatch, JobPost
-from homecontrol_api.scheduler.tasks import AVAILABLE_TASKS
 
 scheduler = APIRouter(prefix="/scheduler", tags=["scheduler"])
-
-
-@scheduler.get("/available_tasks")
-async def get_available_tasks(user: AdminUser, api_service: APIService) -> list[str]:
-    return AVAILABLE_TASKS.keys()
 
 
 @scheduler.get("/jobs")

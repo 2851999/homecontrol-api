@@ -57,7 +57,10 @@ class Scheduler:
     def add_job(self, job_id: str, job_info: JobPost, task_function: Any):
         """Add a job to the scheduler"""
         self._scheduler.add_job(
-            func=task_function, id=job_id, **self._get_trigger_args(job_info.trigger)
+            func=task_function,
+            id=job_id,
+            args=[job_id],
+            **self._get_trigger_args(job_info.trigger),
         )
 
     def pause_job(self, job_id: str):
@@ -66,19 +69,20 @@ class Scheduler:
     def resume_job(self, job_id: str):
         self._scheduler.resume_job(job_id=job_id)
 
-    def modify_job(
+    def reschedule_job(
         self,
         job_id: str,
-        new_task_function: Optional[Any] = None,
         new_trigger: Optional[Trigger] = None,
     ):
         modify_args = {}
-        if new_task_function:
-            modify_args["func"] = new_task_function
         if new_trigger:
             modify_args = {**modify_args, **self._get_trigger_args(new_trigger)}
-        self._scheduler.modify_job(job_id=job_id, **modify_args)
+        self._scheduler.reschedule_job(job_id=job_id, **modify_args)
+
+    def has_job(self, job_id: str):
+        return self._scheduler.get_job(job_id) is not None
 
     def remove_job(self, job_id: str):
         """Remove a job from the scheduler"""
+
         self._scheduler.remove_job(job_id)

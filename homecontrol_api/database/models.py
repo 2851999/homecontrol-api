@@ -52,7 +52,7 @@ class JobInDB(Base):
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String)
-    task = Column(String)
+    task = Column(mutable_json_type(dbtype=JSON, nested=True))
     trigger = Column(mutable_json_type(dbtype=JSON, nested=True))
     status = Column(String)
 

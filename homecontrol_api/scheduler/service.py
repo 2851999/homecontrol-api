@@ -1,13 +1,14 @@
 import uuid
+
+from apscheduler.jobstores.base import JobLookupError
 from homecontrol_base.service.core import BaseService
 from pydantic import TypeAdapter
 
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.models import JobInDB
-from homecontrol_api.exceptions import TaskNotFoundError
 from homecontrol_api.scheduler.core import Scheduler
 from homecontrol_api.scheduler.schemas import Job, JobPatch, JobPost, JobStatus
-from homecontrol_api.scheduler.tasks import AVAILABLE_TASKS
+from homecontrol_api.scheduler.tasks import task_handler
 
 
 class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
@@ -30,15 +31,7 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
 
         Returns:
             Job: Created job
-
-        Raises:
-            TaskNotFoundError: If the given task doesn't exist
         """
-
-        # Attempt to get the task function (and ensure it exists)
-        task_function = AVAILABLE_TASKS.get(job_info.task)
-        if task_function is None:
-            raise TaskNotFoundError(f"Task '{job_info.task}' was not found")
 
         # Create the database model (and ensure id is created before adding)
         job = JobInDB(**job_info.model_dump(), id=uuid.uuid4(), status=JobStatus.ACTIVE)
@@ -47,7 +40,7 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
         self._scheduler.add_job(
             job_id=str(job.id),
             job_info=job_info,
-            task_function=task_function,
+            task_function=task_handler,
         )
 
         # Add to the database (only once successfully added to APScheduler)
@@ -77,37 +70,37 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
         # Obtain the Job
         job = self.db_conn.jobs.get(job_id)
 
+        # Assign the new data
+        update_data = job_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(job, key, value)
+
+        if not self._scheduler.has_job(job_id):
+            # Need to create the job, presumably this state has occurred because a datetime
+            # trigger has been used and is in the past, so APScheduler has removed it
+            self._scheduler.add_job(
+                job_id=job_id,
+                job_info=JobPost(**Job.model_validate(job).model_dump()),
+                task_function=task_handler,
+            )
+        else:
+            # Check if task itself changing
+            update_trigger: bool = job_data.trigger is not None
+
+            if update_trigger:
+                new_trigger = job_data.trigger
+
+                self._scheduler.reschedule_job(
+                    job_id=job_id,
+                    new_trigger=new_trigger,
+                )
+
         # Check if status changing and update the job in the scheduler if necessary
         if job_data.status is not None and job_data.status != job.status:
             if job_data.status == JobStatus.ACTIVE:
                 self._scheduler.resume_job(job_id=job_id)
             elif job_data.status == JobStatus.PAUSED:
                 self._scheduler.pause_job(job_id=job_id)
-
-        # Check if task itself changing
-        update_task: bool = job_data.task is not None and job_data.task != job.task
-        update_trigger: bool = job_data.trigger is not None
-
-        if update_task or update_trigger:
-            new_task_function = None
-            new_trigger = None
-            if update_task:
-                task_function = AVAILABLE_TASKS.get(job_data.task)
-                if task_function is None:
-                    raise TaskNotFoundError(f"Task '{job_data.task}' was not found")
-            if update_trigger:
-                new_trigger = job_data.trigger
-
-            self._scheduler.modify_job(
-                job_id=job_id,
-                new_task_function=new_task_function,
-                new_trigger=new_trigger,
-            )
-
-        # Assign the new data
-        update_data = job_data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(job, key, value)
 
         # Update and return the updated data
         self.db_conn.jobs.update(job)
@@ -120,5 +113,10 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
             job_id (str): ID of the Job to delete
         """
 
-        self._scheduler.remove_job(job_id)
+        # Ignore errors from APScheduler not finding the job e.g. a job with a
+        # datetime in the past will be removed automatically
+        try:
+            self._scheduler.remove_job(job_id)
+        except JobLookupError:
+            pass
         self.db_conn.jobs.delete(job_id)
