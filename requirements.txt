@@ -15,7 +15,7 @@ fastapi==0.111.0
 fastapi-cli==0.0.3
 greenlet==3.0.3
 h11==0.14.0
-homecontrol-base @ git+https://github.com/2851999/homecontrol-base@be6d97e47db3fb1eaa62b31a3cc1e984ea007390
+homecontrol-base @ git+https://github.com/2851999/homecontrol-base@339c31634846aa14e0789bfa826a2ba86ecf63c6
 httpcore==1.0.5
 httptools==0.6.1
 httpx==0.27.0
