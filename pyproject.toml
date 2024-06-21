@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "homecontrol-api"
-version = "0.5.1"
+version = "0.5.2"
 authors = [{ name = "2851999", email = "2851999@users.noreply.github.com" }]
 description = "A library for controlling home appliances"
 license = { text = "Apache License 2.0" }
@@ -15,7 +15,7 @@ classifiers = [
 ]
 requires-python = ">=3.9.5"
 dependencies = [
-    "homecontrol-base@git+https://github.com/2851999/homecontrol-base@v0.2.1",
+    "homecontrol-base@git+https://github.com/2851999/homecontrol-base@v0.2.2",
     "fastapi",
     "uvicorn[standard]",
     "bcrypt",
