@@ -2,7 +2,12 @@ from homecontrol_base.exceptions import DatabaseDuplicateEntryFoundError
 from homecontrol_base.hue.api.schema import Recall, ScenePut
 from homecontrol_base.service.homecontrol_base import HomeControlBaseService
 
-from homecontrol_api.actions.schemas import RoomAction, RoomActionPost, TaskType
+from homecontrol_api.actions.schemas import (
+    RoomAction,
+    RoomActionPatch,
+    RoomActionPost,
+    TaskType,
+)
 from homecontrol_api.database.database import HomeControlAPIDatabaseConnection
 from homecontrol_api.database.models import RoomActionInDB
 from homecontrol_api.exceptions import NameAlreadyExistsError
@@ -49,6 +54,28 @@ class ActionService(BaseAPIService[HomeControlAPIDatabaseConnection]):
         return RoomAction.model_validate(
             self.db_conn.room_actions.get(action_id=action_id)
         )
+
+    def update_room_action(
+        self, action_id: str, action_data: RoomActionPatch
+    ) -> RoomAction:
+        """Updates a room action
+
+        Args:
+            action_id (str): ID of the room action to update
+            action_data (RoomActionPatch): Data to update in the room action
+        """
+
+        # Obtain the room action
+        action = self.db_conn.room_actions.get(action_id)
+
+        # Assign the new data
+        update_data = action_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(action, key, value)
+
+        # Update and return the updated data
+        self.db_conn.room_actions.update(action)
+        return RoomAction.model_validate(action)
 
     async def execute_room_action(self, action_id: str) -> None:
         """Executes a room action

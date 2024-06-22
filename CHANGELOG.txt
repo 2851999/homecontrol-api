@@ -1,4 +1,10 @@
 -------------------------------------------------------------
+Next version
+
+- Added /rooms/actions/{action_id} patch endpoint for
+  updating room actions
+
+-------------------------------------------------------------
 v0.5.2
 
 - Upgrade packages

@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
@@ -52,25 +52,22 @@ class RoomAction(BaseModel):
     tasks: list[Task]
 
 
-class TaskACStatePost(BaseModel):
-    task_type: Literal[TaskType.AC_STATE]
-    device_id: StringUUID
-    state: ACDeviceStatePut
-
-
-TaskPost = Annotated[
-    Union[TaskACStatePost, TaskBroadlinkAction, TaskHueScene],
-    Field(discriminator="task_type"),
-]
-
-
 class RoomActionPost(BaseModel):
     name: str
     room_id: UUIDString
     icon: str
-    tasks: list[TaskPost]
+    tasks: list[Task]
 
     @field_serializer("tasks")
-    def serialize_controllers(self, tasks: list[TaskPost]):
+    def serialize_controllers(self, tasks: list[Task]):
         """Serialize controllers to dictionary when giving to the JSON field in the database"""
         return [task.model_dump() for task in tasks]
+
+
+class RoomActionPatch(BaseModel):
+    name: Optional[str] = None
+    room_id: Optional[UUIDString] = None
+    icon: Optional[str] = None
+
+    # TODO: For now all or nothing for simplicity
+    tasks: Optional[list[Task]] = None

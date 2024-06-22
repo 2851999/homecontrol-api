@@ -21,7 +21,7 @@ async def create_room(
 @rooms.patch("/{room_id}")
 async def patch_room(
     room_id: str, room_data: RoomPatch, user: AnyUser, api_service: APIService
-):
+) -> Room:
     return api_service.room.update_room(room_id, room_data)
 
 
