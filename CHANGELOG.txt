@@ -1,5 +1,5 @@
 -------------------------------------------------------------
-Next version
+v0.6.0
 
 - Added /rooms/actions/{action_id} patch endpoint for
   updating room actions
