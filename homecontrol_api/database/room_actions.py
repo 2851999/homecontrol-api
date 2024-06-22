@@ -39,7 +39,7 @@ class RoomActionsDBConnection(DatabaseConnection):
         self._session.refresh(action)
         return action
 
-    def get(self, action_id: str) -> RoomInDB:
+    def get(self, action_id: str) -> RoomActionInDB:
         """Returns RoomActionInDB given a room action's ID
 
         Args:
