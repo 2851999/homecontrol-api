@@ -31,11 +31,11 @@ class ACDeviceState(BaseModel):
     eco_mode: bool
     turbo_mode: bool
     fahrenheit: bool
+    display_on: bool
 
     # Read only
     indoor_temperature: float
     outdoor_temperature: float
-    display_on: bool
 
 
 class ACDeviceStatePut(BaseModel):
@@ -48,6 +48,7 @@ class ACDeviceStatePut(BaseModel):
     eco_mode: bool
     turbo_mode: bool
     fahrenheit: bool
+    display_on: bool
 
     # Write only
     prompt_tone: bool
