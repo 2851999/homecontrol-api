@@ -1,4 +1,10 @@
 -------------------------------------------------------------
+Next version
+
+- Added ability to control an AC device's display
+- Upgrade packages
+
+-------------------------------------------------------------
 v0.6.0
 
 - Added /rooms/actions/{action_id} patch endpoint for
