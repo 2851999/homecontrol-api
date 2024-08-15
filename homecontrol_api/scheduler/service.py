@@ -69,18 +69,16 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
 
         # Obtain the Job
         job = self.db_conn.jobs.get(job_id)
-
-        # Assign the new data
         update_data = job_data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(job, key, value)
 
         if not self._scheduler.has_job(job_id):
             # Need to create the job, presumably this state has occurred because a datetime
             # trigger has been used and is in the past, so APScheduler has removed it
             self._scheduler.add_job(
                 job_id=job_id,
-                job_info=JobPost(**Job.model_validate(job).model_dump()),
+                job_info=JobPost(
+                    **{**Job.model_validate(job).model_dump(), **update_data}
+                ),
                 task_function=task_handler,
             )
         else:
@@ -101,6 +99,10 @@ class SchedulerService(BaseService[HomeControlAPIDatabaseConnection]):
                 self._scheduler.resume_job(job_id=job_id)
             elif job_data.status == JobStatus.PAUSED:
                 self._scheduler.pause_job(job_id=job_id)
+
+        # Assign the new data
+        for key, value in update_data.items():
+            setattr(job, key, value)
 
         # Update and return the updated data
         self.db_conn.jobs.update(job)
