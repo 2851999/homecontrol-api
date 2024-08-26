@@ -1,4 +1,9 @@
 -------------------------------------------------------------
+v0.7.2
+
+- Upgrade packages
+
+-------------------------------------------------------------
 v0.7.1
 
 - Fixed issue preventing scheduled jobs from being paused or
