@@ -8,7 +8,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/homecontrol-api"
 COPY ./requirements.txt /homecontrol-api/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /homecontrol-api/requirements.txt
-RUN pip install psycopg2-binary
+RUN pip install psycopg[binary]
 
 COPY ./homecontrol_api /homecontrol-api/homecontrol_api
 
